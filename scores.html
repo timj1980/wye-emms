@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sharks – Match Viewer</title>
+
+  <!-- Load shared styles including GitHub-style tabs -->
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+    th { background: #eee; }
+    select { padding: 6px; font-size: 16px; margin-bottom: 20px; }
+    h2 { margin-top: 30px; }
+  </style>
+</head>
+
+<body>
+
+<!-- Shared navigation -->
+<div id="nav-placeholder"></div>
+
+<script>
+  // Load shared nav
+  fetch("Nav.html")
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById("nav-placeholder").innerHTML = html;
+      initNav();
+    });
+
+  function initNav() {
+    // Highlight current page
+    const page = window.location.pathname.split("/").pop().toLowerCase();
+
+    document.querySelectorAll(".gh-tabs a").forEach(link => {
+      const href = link.getAttribute("href").toLowerCase();
+      if (href.includes(page)) {
+        link.classList.add("active");
+      }
+    });
+  }
+</script>
+
+<h1>Sharks – Game Results</h1>
+
+<label><strong>Select Match:</strong></label>
+<select id="matchSelect"></select>
+
+<table id="matchTable">
+  <thead>
+    <tr>
+      
+      <th colspan="10"><div id="HomeTeam"></div></th>
+      
+      <th colspan="10"><div id="AwayTeam"></div></th>
+      
+    </tr>
+     <tr>
+      <th>Away Player</th>
+      <th colspan="8">Home Balls</th>
+      <th>Total</th>
+      <th>Away Player</th>
+      <th colspan="8">Away Balls</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div id="totals"></div>
+
+<script type="module">
+function highlightScore(score) {
+  return score > 9 
+    ? `<span class="spare_cell">${score}</span>` 
+    : score;
+}
+
+function highlightCell(score) {
+  return score > 9
+    ? `<td class="spare_cell">${score}</td>`
+    : `<td>${score}</td>`;
+}
+  import { supabase } from "./supabase.js";
+
+  async function loadMatches() {
+    const { data: scores } = await supabase
+      .from("Sharks_scores")
+      .select("*")
+      .order("GameDate", { ascending: false });
+
+    const matchSelect = document.getElementById("matchSelect");
+
+    const dates = [...new Set(scores.map(row => row.GameDate))];
+
+    for (const date of dates) {
+      const { data: fx } = await supabase.rpc("get_sharks_fixture", {
+        game_date: date
+      });
+
+      let label = date;
+
+      if (fx && fx.length > 0) {
+        const home = fx[0].home_team_name;
+        const away = fx[0].away_team_name;
+
+        const isHome = home === "Sharks";
+        const opponent = isHome ? away : home;
+        const ha = isHome ? "(H)" : "(A)";
+
+        label = `${date} ${ha} ${opponent}`;
+      }
+
+      const opt = document.createElement("option");
+      opt.value = date;
+      opt.textContent = label;
+      matchSelect.appendChild(opt);
+    }
+
+    if (dates.length > 0) {
+      loadMatchTable(scores, dates[0]);
+    }
+
+    matchSelect.addEventListener("change", () => {
+      loadMatchTable(scores, matchSelect.value);
+    });
+  }
+
+  async function loadMatchTable(allRows, selectedDate) {
+    const handOrder = { Front: 1, Middle: 2, Back: 3 };
+
+    const rows = allRows
+      .filter(r => r.GameDate === selectedDate)
+      .sort((a, b) => {
+        const h = handOrder[a.Hand] - handOrder[b.Hand];
+        if (h !== 0) return h;
+        return a.id - b.id;
+      });
+
+    const tbody = document.querySelector("#matchTable tbody");
+    tbody.innerHTML = "";
+
+    const { data: fx } = await supabase.rpc("get_sharks_fixture", {
+      game_date: selectedDate
+    });
+
+    let homeTeamName = "Unknown";
+    let awayTeamName = "Unknown";
+
+    if (fx && fx.length > 0) {
+      homeTeamName = fx[0].home_team_name;
+      awayTeamName = fx[0].away_team_name;
+    }
+
+    
+
+document.getElementById("HomeTeam").innerHTML =
+      `${homeTeamName}`;
+
+document.getElementById("AwayTeam").innerHTML =
+      `${awayTeamName}`;
+
+
+    let frontHome = 0, frontAway = 0;
+    let middleHome = 0, middleAway = 0;
+    let backHome = 0, backAway = 0;
+
+    rows.forEach(row => {
+      const homeBalls = [
+        row.HomeBall1, row.HomeBall2, row.HomeBall3, row.HomeBall4,
+        row.HomeBall5, row.HomeBall6, row.HomeBall7, row.HomeBall8
+      ];
+
+      const awayBalls = [
+        row.AwayBall1, row.AwayBall2, row.AwayBall3, row.AwayBall4,
+        row.AwayBall5, row.AwayBall6, row.AwayBall7, row.AwayBall8
+      ];
+
+      const homeTotal = homeBalls.reduce((a,b) => a+b, 0);
+      const awayTotal = awayBalls.reduce((a,b) => a+b, 0);
+
+      if (row.Hand === "Front") {
+        frontHome += homeTotal;
+        frontAway += awayTotal;
+      }
+      if (row.Hand === "Middle") {
+        middleHome += homeTotal;
+        middleAway += awayTotal;
+      }
+      if (row.Hand === "Back") {
+        backHome += homeTotal;
+        backAway += awayTotal;
+      }
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        
+        <td>${row.Home_Player}</td>
+        ${homeBalls.map(b => highlightCell(b)).join("")}
+        <td><strong>${homeTotal}</strong></td>
+        <td>${row.Away_Player}</td>
+        ${awayBalls.map(b => highlightCell(b)).join("")}
+        <td><strong>${awayTotal}</strong></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const matchHome = frontHome + middleHome + backHome;
+    const matchAway = frontAway + middleAway + backAway;
+
+    let homePoints = 0;
+    let awayPoints = 0;
+
+    if (frontHome > frontAway) homePoints += 2;
+    else if (frontAway > frontHome) awayPoints += 2;
+
+    if (middleHome > middleAway) homePoints += 2;
+    else if (middleAway > middleHome) awayPoints += 2;
+
+    if (backHome > backAway) homePoints += 2;
+    else if (backAway > backHome) awayPoints += 2;
+
+    if (matchHome > matchAway) homePoints += 4;
+    else if (matchAway > matchHome) awayPoints += 4;
+
+    const totalsDiv = document.getElementById("totals");
+    totalsDiv.innerHTML = `
+      <h2>Hand Totals</h2>
+      <table>
+        <tr><th>Hand</th><th>${homeTeamName}</th><th>${awayTeamName}</th></tr>
+        <tr><td>Front</td><td>${frontHome}</td><td>${frontAway}</td></tr>
+        <tr><td>Middle</td><td>${middleHome}</td><td>${middleAway}</td></tr>
+        <tr><td>Back</td><td>${backHome}</td><td>${backAway}</td></tr>
+      </table>
+
+      <h2>Match Total</h2>
+      <table>
+        <tr><th>${homeTeamName}</th><th>${awayTeamName}</th></tr>
+        <tr><td>${matchHome}</td><td>${matchAway}</td></tr>
+      </table>
+
+      <h2>Points Awarded</h2>
+      <table>
+        <tr><th>Team</th><th>Points</th></tr>
+        <tr><td>${homeTeamName}</td><td>${homePoints}</td></tr>
+        <tr><td>${awayTeamName}</td><td>${awayPoints}</td></tr>
+      </table>
+    `;
+  }
+
+  loadMatches();
+</script>
+
+</body>
+</html>

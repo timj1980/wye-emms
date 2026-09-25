@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sharks Score Entry</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .step { display: none; }
+    .step.active { display: block; }
+
+    h2 { margin-top: 0; }
+
+    label { display: block; margin-top: 10px; font-weight: bold; }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 1.1rem;
+      box-sizing: border-box;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 1.1rem;
+      box-sizing: border-box;
+    }
+
+    .player-block {
+      margin-bottom: 25px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .balls {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+      margin-top: 10px;
+    }
+
+    .balls input {
+      width: 40px;
+      padding: 6px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+
+
+    .totals {
+      margin-top: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    .summary-block {
+      padding: 12px;
+      margin-bottom: 15px;
+      background: #f3f3f3;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      background: #0a7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .secondary {
+      background: #555;
+    }
+
+    .hand-total-box {
+      background: #eef2f5;
+      padding: 12px;
+      margin: 15px 0;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.0rem;
+    }
+
+    #leadBanner {
+      position: sticky;
+      top: 0;
+      background: #003366;
+      color: white;
+      padding: 12px;
+      font-size: 1.1rem;
+      border-bottom: 3px solid #ffaa00;
+      z-index: 999;
+      margin: -20px -20px 20px -20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="leadBanner">
+  <span id="handLeadText">Hand level</span><br>
+  <span id="gameLeadText">Game level</span>
+</div>
+
+<h1>Sharks Score Entry</h1>
+
+<input type="hidden" id="Season" value="2026/27">
+
+<label>Game:</label>
+<select id="GameSelect"></select>
+
+<!-- FRONT HAND -->
+<div id="step1" class="step active">
+  <h2>Front Hand</h2>
+
+  <!-- FH1 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="FH1_Home_Player">
+    <div class="balls">
+      <input id="FH1_HomeBall1"><input id="FH1_HomeBall2"><input id="FH1_HomeBall3"><input id="FH1_HomeBall4">
+      <input id="FH1_HomeBall5"><input id="FH1_HomeBall6"><input id="FH1_HomeBall7"><input id="FH1_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="FH1_Away_Player">
+    <div class="balls">
+      <input id="FH1_AwayBall1"><input id="FH1_AwayBall2"><input id="FH1_AwayBall3"><input id="FH1_AwayBall4">
+      <input id="FH1_AwayBall5"><input id="FH1_AwayBall6"><input id="FH1_AwayBall7"><input id="FH1_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="FH1_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="FH1_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <!-- FH2 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="FH2_Home_Player">
+    <div class="balls">
+      <input id="FH2_HomeBall1"><input id="FH2_HomeBall2"><input id="FH2_HomeBall3"><input id="FH2_HomeBall4">
+      <input id="FH2_HomeBall5"><input id="FH2_HomeBall6"><input id="FH2_HomeBall7"><input id="FH2_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="FH2_Away_Player">
+    <div class="balls">
+      <input id="FH2_AwayBall1"><input id="FH2_AwayBall2"><input id="FH2_AwayBall3"><input id="FH2_AwayBall4">
+      <input id="FH2_AwayBall5"><input id="FH2_AwayBall6"><input id="FH2_AwayBall7"><input id="FH2_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="FH2_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="FH2_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <!-- FH3 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="FH3_Home_Player">
+    <div class="balls">
+      <input id="FH3_HomeBall1"><input id="FH3_HomeBall2"><input id="FH3_HomeBall3"><input id="FH3_HomeBall4">
+      <input id="FH3_HomeBall5"><input id="FH3_HomeBall6"><input id="FH3_HomeBall7"><input id="FH3_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="FH3_Away_Player">
+    <div class="balls">
+      <input id="FH3_AwayBall1"><input id="FH3_AwayBall2"><input id="FH3_AwayBall3"><input id="FH3_AwayBall4">
+      <input id="FH3_AwayBall5"><input id="FH3_AwayBall6"><input id="FH3_AwayBall7"><input id="FH3_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="FH3_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="FH3_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <div class="hand-total-box" style="visibility: hidden">
+    Front Hand Total: <span id="FrontHandTotal">0</span>
+  </div>
+
+  <div id="FrontHandBreakdown" class="hand-total-box"></div>
+
+  <button id="next1">Next: Middle Hand</button>
+</div>
+
+<!-- MIDDLE HAND -->
+<div id="step2" class="step">
+  <h2>Middle Hand</h2>
+
+  <!-- MH1 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="MH1_Home_Player">
+    <div class="balls">
+      <input id="MH1_HomeBall1"><input id="MH1_HomeBall2"><input id="MH1_HomeBall3"><input id="MH1_HomeBall4">
+      <input id="MH1_HomeBall5"><input id="MH1_HomeBall6"><input id="MH1_HomeBall7"><input id="MH1_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="MH1_Away_Player">
+    <div class="balls">
+      <input id="MH1_AwayBall1"><input id="MH1_AwayBall2"><input id="MH1_AwayBall3"><input id="MH1_AwayBall4">
+      <input id="MH1_AwayBall5"><input id="MH1_AwayBall6"><input id="MH1_AwayBall7"><input id="MH1_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="MH1_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="MH1_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <!-- MH2 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="MH2_Home_Player">
+    <div class="balls">
+      <input id="MH2_HomeBall1"><input id="MH2_HomeBall2"><input id="MH2_HomeBall3"><input id="MH2_HomeBall4">
+      <input id="MH2_HomeBall5"><input id="MH2_HomeBall6"><input id="MH2_HomeBall7"><input id="MH2_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="MH2_Away_Player">
+    <div class="balls">
+      <input id="MH2_AwayBall1"><input id="MH2_AwayBall2"><input id="MH2_AwayBall3"><input id="MH2_AwayBall4">
+      <input id="MH2_AwayBall5"><input id="MH2_AwayBall6"><input id="MH2_AwayBall7"><input id="MH2_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="MH2_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="MH2_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <!-- MH3 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="MH3_Home_Player">
+    <div class="balls">
+      <input id="MH3_HomeBall1"><input id="MH3_HomeBall2"><input id="MH3_HomeBall3"><input id="MH3_HomeBall4">
+      <input id="MH3_HomeBall5"><input id="MH3_HomeBall6"><input id="MH3_HomeBall7"><input id="MH3_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="MH3_Away_Player">
+    <div class="balls">
+      <input id="MH3_AwayBall1"><input id="MH3_AwayBall2"><input id="MH3_AwayBall3"><input id="MH3_AwayBall4">
+      <input id="MH3_AwayBall5"><input id="MH3_AwayBall6"><input id="MH3_AwayBall7"><input id="MH3_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="MH3_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="MH3_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <div class="hand-total-box" style="visibility: hidden">
+    Middle Hand Total: <span id="MiddleHandTotal">0</span>
+  </div>
+
+  <div id="MiddleHandBreakdown" class="hand-total-box"></div>
+
+  <button class="secondary" id="back1">Back</button>
+  <button id="next2">Next: Back Hand</button>
+</div>
+
+<!-- BACK HAND -->
+<div id="step3" class="step">
+  <h2>Back Hand</h2>
+
+  <!-- BH1 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="BH1_Home_Player">
+    <div class="balls">
+      <input id="BH1_HomeBall1"><input id="BH1_HomeBall2"><input id="BH1_HomeBall3"><input id="BH1_HomeBall4">
+      <input id="BH1_HomeBall5"><input id="BH1_HomeBall6"><input id="BH1_HomeBall7"><input id="BH1_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="BH1_Away_Player">
+    <div class="balls">
+      <input id="BH1_AwayBall1"><input id="BH1_AwayBall2"><input id="BH1_AwayBall3"><input id="BH1_AwayBall4">
+      <input id="BH1_AwayBall5"><input id="BH1_AwayBall6"><input id="BH1_AwayBall7"><input id="BH1_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="BH1_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="BH1_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <!-- BH2 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="BH2_Home_Player">
+    <div class="balls">
+      <input id="BH2_HomeBall1"><input id="BH2_HomeBall2"><input id="BH2_HomeBall3"><input id="BH2_HomeBall4">
+      <input id="BH2_HomeBall5"><input id="BH2_HomeBall6"><input id="BH2_HomeBall7"><input id="BH2_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="BH2_Away_Player">
+    <div class="balls">
+      <input id="BH2_AwayBall1"><input id="BH2_AwayBall2"><input id="BH2_AwayBall3"><input id="BH2_AwayBall4">
+      <input id="BH2_AwayBall5"><input id="BH2_AwayBall6"><input id="BH2_AwayBall7"><input id="BH2_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="BH2_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="BH2_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <!-- BH3 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="BH3_Home_Player">
+    <div class="balls">
+      <input id="BH3_HomeBall1"><input id="BH3_HomeBall2"><input id="BH3_HomeBall3"><input id="BH3_HomeBall4">
+      <input id="BH3_HomeBall5"><input id="BH3_HomeBall6"><input id="BH3_HomeBall7"><input id="BH3_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="BH3_Away_Player">
+    <div class="balls">
+      <input id="BH3_AwayBall1"><input id="BH3_AwayBall2"><input id="BH3_AwayBall3"><input id="BH3_AwayBall4">
+      <input id="BH3_AwayBall5"><input id="BH3_AwayBall6"><input id="BH3_AwayBall7"><input id="BH3_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="BH3_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="BH3_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <!-- BH4 -->
+  <div class="player-block">
+    <label>Home Player</label>
+    <input type="text" id="BH4_Home_Player">
+    <div class="balls">
+      <input id="BH4_HomeBall1"><input id="BH4_HomeBall2"><input id="BH4_HomeBall3"><input id="BH4_HomeBall4">
+      <input id="BH4_HomeBall5"><input id="BH4_HomeBall6"><input id="BH4_HomeBall7"><input id="BH4_HomeBall8">
+    </div>
+
+    <label>Away Player</label>
+    <input type="text" id="BH4_Away_Player">
+    <div class="balls">
+      <input id="BH4_AwayBall1"><input id="BH4_AwayBall2"><input id="BH4_AwayBall3"><input id="BH4_AwayBall4">
+      <input id="BH4_AwayBall5"><input id="BH4_AwayBall6"><input id="BH4_AwayBall7"><input id="BH4_AwayBall8">
+    </div>
+
+    <div class="totals">
+      Home Total: <span id="BH4_HomeTotal">0</span> &nbsp;&nbsp;
+      Away Total: <span id="BH4_AwayTotal">0</span>
+    </div>
+  </div>
+
+  <div class="hand-total-box" style="visibility: hidden">
+    Back Hand Total: <span id="BackHandTotal">0</span>
+  </div>
+
+  <div id="BackHandBreakdown" class="hand-total-box"></div>
+
+  <button class="secondary" id="back2">Back</button>
+  <button id="submitMatch">Summary</button>
+</div>
+
+<!-- SUMMARY SCREEN -->
+<div id="step4" class="step">
+  <h2>Match Summary</h2>
+
+  <div id="summaryContent"></div>
+
+  <h3>Hand Totals</h3>
+  <div id="handTotals"></div>
+
+  <h3>Team Totals</h3>
+  <div id="teamTotals"></div>
+
+  <button class="secondary" id="summaryBack">Back</button>
+  <button id="summarySubmit">Submit Match</button>
+</div>
+
+<p id="result"></p>
+
+<script type="module">
+  import { supabase } from './supabase.js';
+
+  function showStep(n) {
+    document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
+    document.getElementById(`step${n}`).classList.add("active");
+  }
+
+  next1.onclick = () => showStep(2);
+  back1.onclick = () => showStep(1);
+  next2.onclick = () => showStep(3);
+  back2.onclick = () => showStep(2);
+  summaryBack.onclick = () => showStep(3);
+
+  function setupTotals(prefix) {
+    function update() {
+      let home = 0;
+      let away = 0;
+      for (let i = 1; i <= 8; i++) {
+        home += Number(document.getElementById(`${prefix}_HomeBall${i}`).value) || 0;
+        away += Number(document.getElementById(`${prefix}_AwayBall${i}`).value) || 0;
+      }
+      document.getElementById(`${prefix}_HomeTotal`).textContent = home;
+      document.getElementById(`${prefix}_AwayTotal`).textContent = away;
+
+      updateHandTotals();
+      updateBreakdown();
+    }
+
+    for (let i = 1; i <= 8; i++) {
+      document.getElementById(`${prefix}_HomeBall${i}`).addEventListener("input", update);
+      document.getElementById(`${prefix}_AwayBall${i}`).addEventListener("input", update);
+    }
+  }
+
+  [
+    "FH1","FH2","FH3",
+    "MH1","MH2","MH3",
+    "BH1","BH2","BH3","BH4"
+  ].forEach(setupTotals);
+
+  function updateHandTotals() {
+    const front = ["FH1","FH2","FH3"];
+    const middle = ["MH1","MH2","MH3"];
+    const back = ["BH1","BH2","BH3","BH4"];
+
+    function sum(prefixes) {
+      let total = 0;
+      prefixes.forEach(p => {
+        total += Number(document.getElementById(`${p}_HomeTotal`).textContent) || 0;
+        total += Number(document.getElementById(`${p}_AwayTotal`).textContent) || 0;
+      });
+      return total;
+    }
+
+    document.getElementById("FrontHandTotal").textContent = sum(front);
+    document.getElementById("MiddleHandTotal").textContent = sum(middle);
+    document.getElementById("BackHandTotal").textContent = sum(back);
+  }
+
+  const groups = {
+    Front: ["FH1","FH2","FH3"],
+    Middle: ["MH1","MH2","MH3"],
+    Back: ["BH1","BH2","BH3","BH4"]
+  };
+
+  function handTotals(prefixes) {
+    let home = 0;
+    let away = 0;
+
+    prefixes.forEach(p => {
+      home += Number(document.getElementById(`${p}_HomeTotal`).textContent) || 0;
+      away += Number(document.getElementById(`${p}_AwayTotal`).textContent) || 0;
+    });
+
+    return { home, away };
+  }
+
+  function runningTotals(currentHand) {
+    let FH = handTotals(groups.Front);
+    let MH = handTotals(groups.Middle);
+    let BH = handTotals(groups.Back);
+
+    if (currentHand === "Front") {
+      return FH;
+    }
+    if (currentHand === "Middle") {
+      return {
+        home: FH.home + MH.home,
+        away: FH.away + MH.away
+      };
+    }
+    if (currentHand === "Back") {
+      return {
+        home: FH.home + MH.home + BH.home,
+        away: FH.away + MH.away + BH.away
+      };
+    }
+  }
+
+function updateBanner(handHome, handAway, gameHome, gameAway) {
+
+  const sel = document.getElementById("GameSelect");
+  const oppositionName = sel.options[sel.selectedIndex].dataset.opposition || "Opposition";
+
+  const handLead = handHome - handAway;
+  const gameLead = gameHome - gameAway;
+
+  const handSpan = document.getElementById("handLeadText");
+  const gameSpan = document.getElementById("gameLeadText");
+
+  // Hand text
+  if (handLead > 0) {
+    handSpan.textContent = `Sharks lead Hand by ${handLead}`;
+    handSpan.style.color = "limegreen";
+  } else if (handLead < 0) {
+    handSpan.textContent = `${oppositionName} lead Hand by ${Math.abs(handLead)}`;
+    handSpan.style.color = "red";
+  } else {
+    handSpan.textContent = `Hand level`;
+    handSpan.style.color = "white";
+  }
+
+  // Game text
+  if (gameLead > 0) {
+    gameSpan.textContent = `Sharks lead Game by ${gameLead}`;
+    gameSpan.style.color = "limegreen";
+  } else if (gameLead < 0) {
+    gameSpan.textContent = `${oppositionName} lead Game by ${Math.abs(gameLead)}`;
+    gameSpan.style.color = "red";
+  } else {
+    gameSpan.textContent = `Game level`;
+    gameSpan.style.color = "white";
+  }
+}
+
+  function makeBlock(handName, prefixes) {
+    let thisHand = handTotals(prefixes);
+    let running = runningTotals(handName);
+
+    updateBanner(thisHand.home, thisHand.away, running.home, running.away);
+
+    let html = `
+      <strong>${handName} Hand</strong><br>
+      <br>
+    `;
+
+    prefixes.forEach(p => {
+      const hp = document.getElementById(`${p}_Home_Player`).value || "";
+      const ap = document.getElementById(`${p}_Away_Player`).value || "";
+      const ht = Number(document.getElementById(`${p}_HomeTotal`).textContent) || 0;
+      const at = Number(document.getElementById(`${p}_AwayTotal`).textContent) || 0;
+
+      html += `${hp}: ${ht}&nbsp;&nbsp;&nbsp;&nbsp;${ap}: ${at}<br>`;
+    });
+
+    html += `
+      <br>
+      Total Hand Home: ${thisHand.home}&nbsp;&nbsp;&nbsp;&nbsp;
+      Total Hand Away: ${thisHand.away}<br><br>
+
+      <strong>Current Game Score</strong><br>
+      Home: ${running.home}&nbsp;&nbsp;&nbsp;&nbsp;Away: ${running.away}
+    `;
+
+    return html;
+  }
+
+  function updateBreakdown() {
+    if (document.getElementById("step1").classList.contains("active")) {
+      document.getElementById("FrontHandBreakdown").innerHTML =
+        makeBlock("Front", groups.Front);
+    }
+
+    if (document.getElementById("step2").classList.contains("active")) {
+      document.getElementById("MiddleHandBreakdown").innerHTML =
+        makeBlock("Middle", groups.Middle);
+    }
+
+    if (document.getElementById("step3").classList.contains("active")) {
+      document.getElementById("BackHandBreakdown").innerHTML =
+        makeBlock("Back", groups.Back);
+    }
+  }
+
+  function buildRow(hand, prefix, date, season) {
+  const row = {
+    GameDate: date,
+    Season: season,
+    Hand: hand,
+    Home_Player: document.getElementById(`${prefix}_Home_Player`).value,
+    Away_Player: document.getElementById(`${prefix}_Away_Player`).value
+  };
+
+  for (let i = 1; i <= 8; i++) {
+    row[`HomeBall${i}`] = Number(document.getElementById(`${prefix}_HomeBall${i}`).value) || 0;
+    row[`AwayBall${i}`] = Number(document.getElementById(`${prefix}_AwayBall${i}`).value) || 0;
+  }
+
+  return row;
+}
+
+  function buildSummary() {
+    const groupsSummary = [
+      { hand: "Front", players: ["FH1", "FH2", "FH3"] },
+      { hand: "Middle", players: ["MH1", "MH2", "MH3"] },
+      { hand: "Back", players: ["BH1", "BH2", "BH3", "BH4"] }
+    ];
+
+    let html = "";
+
+    groupsSummary.forEach(group => {
+      html += `<div class="summary-block">
+        <div class="summary-title">${group.hand} Hand</div>`;
+
+      group.players.forEach(prefix => {
+        const homePlayer = document.getElementById(`${prefix}_Home_Player`).value || "(Home?)";
+        const awayPlayer = document.getElementById(`${prefix}_Away_Player`).value || "(Away?)";
+
+        const homeTotal = document.getElementById(`${prefix}_HomeTotal`).textContent;
+        const awayTotal = document.getElementById(`${prefix}_AwayTotal`).textContent;
+
+        html += `
+          <div>${homePlayer}: <strong>${homeTotal}</strong></div>
+          <div>${awayPlayer}: <strong>${awayTotal}</strong></div>
+          <hr>
+        `;
+      });
+
+      html += `</div>`;
+    });
+
+    document.getElementById("summaryContent").innerHTML = html;
+  }
+
+  function calculateHandTotals() {
+    const hands = {
+      Front: ["FH1", "FH2", "FH3"],
+      Middle: ["MH1", "MH2", "MH3"],
+      Back: ["BH1", "BH2", "BH3", "BH4"]
+    };
+
+    let html = "";
+    let totalHome = 0;
+    let totalAway = 0;
+
+    Object.keys(hands).forEach(hand => {
+      let handHome = 0;
+      let handAway = 0;
+
+      hands[hand].forEach(prefix => {
+        handHome += Number(document.getElementById(`${prefix}_HomeTotal`).textContent) || 0;
+        handAway += Number(document.getElementById(`${prefix}_AwayTotal`).textContent) || 0;
+      });
+
+      html += `
+        <div class="summary-block">
+          <strong>${hand} Hand</strong><br>
+          Home: ${handHome}<br>
+          Away: ${handAway}
+        </div>
+      `;
+
+      totalHome += handHome;
+      totalAway += handAway;
+    });
+
+    document.getElementById("handTotals").innerHTML = html;
+
+    document.getElementById("teamTotals").innerHTML = `
+      <div class="summary-block">
+        <strong>Total Home:</strong> ${totalHome}<br>
+        <strong>Total Away:</strong> ${totalAway}
+      </div>
+    `;
+  }
+
+  submitMatch.onclick = () => {
+    buildSummary();
+    calculateHandTotals();
+    showStep(4);
+  };
+
+  let fixtures = [];
+  let nextFixture = null;
+
+  function parseFixtureDate(str) {
+    // "Friday 02-10-2026" -> "2026-10-02"
+    const parts = str.split(" ");
+    const datePart = parts[1]; // "02-10-2026"
+    const [dd, mm, yyyy] = datePart.split("-");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  async function loadFixtures() {
+    const { data: allData } = await supabase.rpc(
+      'get_fixtures_by_team',
+      { team: 'Sharks' }
+    );
+
+    const { data: nextData } = await supabase.rpc(
+      'get_next_team_fixture',
+      { team_id: 12, season: '2026/27', division: 'Division 3' }
+    );
+
+    fixtures = (allData || []).map(fx => {
+      const iso = parseFixtureDate(fx.game_date);
+      return {
+        raw_date: fx.game_date,
+        iso_date: iso,
+        home_away: fx.home_away,
+        alley: fx.alley,
+        opposition: fx.opposition
+      };
+    });
+
+    const sel = document.getElementById("GameSelect");
+    sel.innerHTML = "";
+
+    fixtures.forEach(fx => {
+      const d = new Date(fx.iso_date);
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+
+      const opt = document.createElement("option");
+      opt.value = fx.iso_date;
+      opt.dataset.opposition = fx.opposition;
+      opt.textContent = `${dd}/${mm}/${yyyy} – ${fx.opposition}`;
+      sel.appendChild(opt);
+    });
+
+    if (nextData && nextData[0]) {
+      const nextIso = parseFixtureDate(nextData[0].game_date);
+      sel.value = nextIso;
+      nextFixture = {
+        iso_date: nextIso,
+        opposition: nextData[0].opposition
+      };
+    } else if (fixtures.length > 0) {
+      sel.value = fixtures[0].iso_date;
+      nextFixture = {
+        iso_date: fixtures[0].iso_date,
+        opposition: fixtures[0].opposition
+      };
+    }
+  }
+
+  loadFixtures();
+
+  summarySubmit.onclick = async () => {
+    const sel = document.getElementById("GameSelect");
+    const date = sel.value;
+    const season = document.getElementById("Season").value || "2026/27";
+    const opposition = sel.options[sel.selectedIndex].dataset.opposition || "";
+
+    const payload = [
+  buildRow("Front", "FH1", date, season),
+  buildRow("Front", "FH2", date, season),
+  buildRow("Front", "FH3", date, season),
+
+  buildRow("Middle", "MH1", date, season),
+  buildRow("Middle", "MH2", date, season),
+  buildRow("Middle", "MH3", date, season),
+
+  buildRow("Back", "BH1", date, season),
+  buildRow("Back", "BH2", date, season),
+  buildRow("Back", "BH3", date, season),
+  buildRow("Back", "BH4", date, season)
+];
+
+    const { data, error } = await supabase
+      .from('Sharks_scores')
+      .insert(payload);
+
+    result.textContent = error ? "Error: " + error.message : "Match uploaded!";
+    showStep(1);
+  };
+</script>
+
+</body>
+</html>

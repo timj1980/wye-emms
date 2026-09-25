@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sharks Skittles League</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body { font-family: Arial; margin: 20px; }
+
+    .banner {
+      background: #f6f8fa;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 16px;
+      margin: 20px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .banner h2 {
+      margin-top: 0;
+      color: #0366d6;
+    }
+
+    .banner p {
+      font-size: 18px;
+      margin: 8px 0 0;
+    }
+
+    .highlight-sharks {
+      background-color: #0044aa;
+      color: white;
+      font-weight: bold;
+    }
+
+    .promotion-row {
+      background-color: #c8f7c5;
+      font-weight: bold;
+    }
+
+    table th, table td {
+      padding: 6px;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="nav-placeholder"></div>
+
+<script>
+  fetch("Nav.html")
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById("nav-placeholder").innerHTML = html;
+      initNav();
+    });
+
+  function initNav() {
+    const page = window.location.pathname.split("/").pop().toLowerCase();
+    document.querySelectorAll(".gh-tabs a").forEach(link => {
+      if (link.getAttribute("href").toLowerCase().includes(page)) {
+        link.classList.add("active");
+      }
+    });
+  }
+</script>
+
+<h1>Tewkesbury Winter Skittles League</h1>
+<h1>Team: Sharks</h1>
+
+<section class="banner next-fixture">
+  <h2>Next Fixture</h2>
+  <p id="nextFixtureText">Loading next fixture...</p>
+</section>
+
+<!-- ⭐ UPDATED TOP SCORERS TABLE -->
+<section class="banner top-scorer">
+  <h2>Top 3 Scorers</h2>
+
+  <table style="width:100%; border-collapse: collapse; margin-top:10px;">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Score</th>
+        <th>Opposition</th>
+        <th>Alley</th>
+      </tr>
+    </thead>
+    <tbody id="topScorerBody"></tbody>
+  </table>
+</section>
+
+<section id="division3" class="banner">
+  <h2>Division 3 League Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Pos</th>
+        <th>Team</th>
+        <th>Played</th>
+        <th>Won</th>
+        <th>Drawn</th>
+        <th>Set 1</th>
+        <th>Set 2</th>
+        <th>Set 3</th>
+        <th>Set D</th>
+        <th>Points</th>
+      </tr>
+    </thead>
+    <tbody id="division3Body"></tbody>
+  </table>
+  * Data From <a href="http://www.tmsl.me.uk/league_results.html">Tewkesbury Mens Skittle League league page</a>
+</section>
+
+<script type="module">
+  import { supabase } from "./supabase.js";
+
+  const season = "2026/27";
+  const teamId = 3;
+  const division = "Premier";
+
+  const formatDate = d => {
+    const date = new Date(d);
+    return `${String(date.getDate()).padStart(2,"0")}/${String(date.getMonth()+1,"0")}/${date.getFullYear()}`;
+  };
+
+  async function loadNextFixture() {
+    const el = document.getElementById("nextFixtureText");
+
+    const { data, error } = await supabase.rpc("get_next_team_fixture", {
+      team_id: teamId,
+      season,
+      division
+    });
+
+    if (error) return el.textContent = "Error loading fixture.";
+    if (!data?.length) return el.textContent = "No upcoming fixtures found.";
+
+    const fx = data[0];
+    el.textContent = `${formatDate(fx.game_date)} – ${fx.home_away} at ${fx.alley} vs ${fx.opposition}`;
+  }
+
+  /* ⭐ UPDATED TOP SCORERS FUNCTION */
+  async function loadTopScorers() {
+    const tbody = document.getElementById("topScorerBody");
+
+    const { data, error } = await supabase.rpc("get_top_sharks_scorers", { season });
+
+    if (error) {
+      tbody.innerHTML = `<tr><td colspan="4">Error loading scorers</td></tr>`;
+      return;
+    }
+
+    if (!data?.length) {
+      tbody.innerHTML = `<tr><td colspan="4">No scores available yet</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map(r => `
+      <tr>
+        <td>${r.player_name}</td>
+        <td>${r.highest_score}</td>
+        <td>${r.opponent_name}</td>
+        <td>${r.alley}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function loadLeagueTable() {
+    const tbody = document.getElementById("leagueTableBody");
+
+    const { data, error } = await supabase.rpc("get_sharks_league_table", { season });
+
+    if (error) {
+      console.error(error);
+      return tbody.innerHTML = `<tr><td colspan="7">Unable to load league table</td></tr>`;
+    }
+
+    tbody.innerHTML = data.map(row => `
+      <tr>
+        <td>${row.type}</td>
+        <td>${row.matches_played}</td>
+        <td>${row.front_points}</td>
+        <td>${row.middle_points}</td>
+        <td>${row.back_points}</td>
+        <td>${row.game_points}</td>
+        <td>${row.total_points}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function loadDivision3() {
+    const tbody = document.getElementById("division3Body");
+
+    try {
+      const html = await fetch("tmsl-2021-2022.html").then(r => r.text());
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+
+      const rows = [...doc.querySelectorAll("tr")];
+
+      const division3Teams = [
+        "Missorts", "Turncoats", "Magpies", "Dumbleton C C", "Monks",
+        "Beechmen", "Yokels", "Sharks", "Beckford S C", "Misfits", "Playboys"
+      ];
+
+      const division3 = [];
+
+      for (const tr of rows) {
+        const cells = [...tr.querySelectorAll("td")].map(td => td.textContent.trim());
+        const teamIndex = cells.findIndex(c => division3Teams.includes(c));
+        if (teamIndex === -1) continue;
+
+        division3.push({
+          team: cells[teamIndex],
+          played: cells[teamIndex + 1] || "",
+          won: cells[teamIndex + 2] || "",
+          drawn: cells[teamIndex + 3] || "",
+          Set1: cells[teamIndex + 4] || "",
+          Set2: cells[teamIndex + 5] || "",
+          Set3: cells[teamIndex + 6] || "",
+          SetD: cells[teamIndex + 7] || "",
+          points: cells[teamIndex + 8] || "",
+          highlight: cells[teamIndex] === "Sharks",
+          position: division3.length + 1,
+          promotion: division3.length < 2
+        });
+      }
+
+      tbody.innerHTML = division3.map(r => `
+        <tr class="${r.highlight ? 'highlight-sharks' : ''} ${r.promotion ? 'promotion-row' : ''}">
+          <td>${r.position}</td>
+          <td>${r.team}</td>
+          <td>${r.played}</td>
+          <td>${r.won}</td>
+          <td>${r.drawn}</td>
+          <td>${r.Set1}</td>
+          <td>${r.Set2}</td>
+          <td>${r.Set3}</td>
+          <td>${r.SetD}</td>
+          <td>${r.points}</td>
+        </tr>
+      `).join("");
+
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = `<tr><td colspan="6">Error loading Division 3</td></tr>`;
+    }
+  }
+
+  loadNextFixture();
+  loadTopScorers();
+  loadLeagueTable();
+  loadDivision3();
+</script>
+
+</body>
+</html>

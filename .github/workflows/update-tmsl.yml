@@ -1,0 +1,36 @@
+name: Update TMSL Results
+
+on:
+  schedule:
+    - cron: "00 03 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Fetch TMSL results page
+        run: |
+          echo "Downloading TMSL page..."
+          curl -L "http://www.tmsl.me.uk/2021-2022%20Results.htm" --output tmsl-2021-2022.html
+          ls -l
+
+      - name: Commit updated file
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git status
+          git commit -m "Auto-update TMSL results" || echo "No changes to commit"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.8.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
