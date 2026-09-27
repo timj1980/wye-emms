@@ -49,6 +49,7 @@
       <th>Home/Away</th>
       <th>Alley</th>
       <th>Opposition</th>
+      <th>Competition</th>
     </tr>
   </thead>
   <tbody></tbody>
@@ -65,7 +66,7 @@
   document.getElementById("TeamHeading").textContent = `${team} Fixtures`;
 
   async function loadFixtures(team) {
-    const { data, error } = await supabase.rpc("get_fixtures_by_team", {
+    const { data, error } = await supabase.rpc("tmsl_get_fixtures", {
       team: team
     });
 
@@ -84,12 +85,15 @@
         <td>${row.home_away}</td>
         <td>${row.alley}</td>
         <td>${row.opposition}</td>
+        <td>${row.match_type}</td>
+
       `;
       tbody.appendChild(tr);
     });
   }
 
   // ⭐ Load fixtures for the team passed in the URL
+console.log("Calling RPC with:", team);
   loadFixtures(team);
 </script>
 

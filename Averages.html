@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
 
-  <title>Sharks – Player Averages</title>
+  <title>Wye Emms – Player Averages</title>
   <link rel="stylesheet" href="style.css" />
   <style>
     body { font-family: Arial; margin: 20px; }
@@ -34,7 +34,7 @@
   }
 </script>
 
-<h1>Sharks – Player Stats</h1>
+<h1>Wye Emms – Player Stats</h1>
 
 <table id="avgTable">
   <thead>
@@ -53,74 +53,36 @@
   import { supabase } from "./supabase.js";
 
   async function loadAverages() {
-    const { data: scores } = await supabase
-      .from("Sharks_scores")
-      .select("*")
-      .order("GameDate", { ascending: true });
+    // 1. Get team name from URL
+    const params = new URLSearchParams(window.location.search);
+    const teamName = params.get("team") || "Wye Emms";
+    const season = params.get("season") || "2026/27";
 
-    const players = {};
+    document.querySelector("h1").textContent = `${teamName} – Player Stats`;
 
-    function addScore(player, balls) {
-      const total = balls.reduce((a,b) => a+b, 0);
-      const spares = balls.filter(b => b > 9).length;
+    // 2. Call your new RPC
+    const { data: stats, error } = await supabase.rpc(
+      "tmsl_get_player_stats",
+      { team: teamName, season }
+    );
 
-      if (!players[player]) {
-        players[player] = { games: 0, total: 0, highest: 0, spares: 0 };
-      }
-
-      players[player].games += 1;
-      players[player].total += total;
-      players[player].spares += spares;
-
-      if (total > players[player].highest) {
-        players[player].highest = total;
-      }
+    if (error) {
+      console.error(error);
+      return;
     }
 
-    for (const row of scores) {
-      const { data: fx } = await supabase.rpc("get_sharks_fixture", {
-        game_date: row.GameDate
-      });
-
-      if (!fx || fx.length === 0) continue;
-
-      const home = fx[0].home_team_name;
-      const away = fx[0].away_team_name;
-
-      const sharksHome = home === "Sharks";
-      const sharksAway = away === "Sharks";
-
-      if (sharksHome) {
-        addScore(row.Home_Player, [
-          row.HomeBall1, row.HomeBall2, row.HomeBall3, row.HomeBall4,
-          row.HomeBall5, row.HomeBall6, row.HomeBall7, row.HomeBall8
-        ]);
-      }
-
-      if (sharksAway) {
-        addScore(row.Away_Player, [
-          row.AwayBall1, row.AwayBall2, row.AwayBall3, row.AwayBall4,
-          row.AwayBall5, row.AwayBall6, row.AwayBall7, row.AwayBall8
-        ]);
-      }
-    }
-
+    // 3. Render table
     const tbody = document.querySelector("#avgTable tbody");
     tbody.innerHTML = "";
 
-    const sortedPlayers = Object.entries(players)
-      .sort((a, b) => (b[1].total / b[1].games) - (a[1].total / a[1].games));
-
-    sortedPlayers.forEach(([player, stats]) => {
-      const avg = (stats.total / stats.games).toFixed(2);
-
+    stats.forEach(row => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${player}</td>
-        <td>${stats.games}</td>
-        <td>${stats.highest}</td>
-        <td>${avg}</td>
-        <td>${stats.spares}</td>
+        <td>${row.player_name}</td>
+        <td>${row.games_played}</td>
+        <td>${row.highest_score}</td>
+        <td>${Number(row.average_score).toFixed(2)}</td>
+        <td>${row.spares_count}</td>
       `;
       tbody.appendChild(tr);
     });

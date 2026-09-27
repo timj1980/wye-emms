@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sharks Skittles League</title>
+  <title>Wye Emms Skittles League</title>
 
   <link rel="stylesheet" href="style.css" />
 
@@ -69,7 +69,7 @@
 </script>
 
 <h1>Tewkesbury Winter Skittles League</h1>
-<h1>Team: Sharks</h1>
+<h1>Team: Wye Emms</h1>
 
 <section class="banner next-fixture">
   <h2>Next Fixture</h2>
@@ -119,8 +119,9 @@
   import { supabase } from "./supabase.js";
 
   const season = "2026/27";
-  const teamId = 3;
+  const LeagueteamId = 3;
   const division = "Premier";
+  const teamID = 17;
 
   const formatDate = d => {
     const date = new Date(d);
@@ -131,7 +132,7 @@
     const el = document.getElementById("nextFixtureText");
 
     const { data, error } = await supabase.rpc("get_next_team_fixture", {
-      team_id: teamId,
+      team_id: LeagueteamId,
       season,
       division
     });
@@ -147,7 +148,10 @@
   async function loadTopScorers() {
     const tbody = document.getElementById("topScorerBody");
 
-    const { data, error } = await supabase.rpc("get_top_sharks_scorers", { season });
+    const { data, error } = await supabase.rpc("tmsl_top3_scores_by_team", {
+  team_id: teamID,
+  season: season
+});
 
     if (error) {
       tbody.innerHTML = `<tr><td colspan="4">Error loading scorers</td></tr>`;
@@ -196,60 +200,88 @@
     const tbody = document.getElementById("division3Body");
 
     try {
-      const html = await fetch("tmsl-2021-2022.html").then(r => r.text());
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
+  const html = await fetch("tmsl-2021-2022.html").then(r => r.text());
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
 
-      const rows = [...doc.querySelectorAll("tr")];
+  // 1. Find ALL tables, but only keep ones with league-style rows
+  const tables = [...doc.querySelectorAll("table")].filter(table =>
+    [...table.querySelectorAll("tr")].some(tr => tr.querySelectorAll("td").length >= 10)
+  );
 
-      const division3Teams = [
-        "Missorts", "Turncoats", "Magpies", "Dumbleton C C", "Monks",
-        "Beechmen", "Yokels", "Sharks", "Beckford S C", "Misfits", "Playboys"
-      ];
+  // 2. Pick the FIRST league table (left-hand division)
+  const leagueTable = tables[0];
+  const rows = [...leagueTable.querySelectorAll("tr")];
 
-      const division3 = [];
+  // 3. Normalise whitespace in every cell
+  const normalise = str => str.replace(/\s+/g, " ").trim();
 
-      for (const tr of rows) {
-        const cells = [...tr.querySelectorAll("td")].map(td => td.textContent.trim());
-        const teamIndex = cells.findIndex(c => division3Teams.includes(c));
-        if (teamIndex === -1) continue;
+  // 4. Premier Division teams
+  const premierTeams = [
+    "The Champions",
+    "Cleeve Hillbillies",
+    "Railwaymen",
+    "Rollers",
+    "Forthampton C C",
+    "Cosmos",
+    "Gunners",
+    "Wye Emms",
+    "L & H Eng",
+    "Strikers",
+    "Swifts"
+  ];
 
-        division3.push({
-          team: cells[teamIndex],
-          played: cells[teamIndex + 1] || "",
-          won: cells[teamIndex + 2] || "",
-          drawn: cells[teamIndex + 3] || "",
-          Set1: cells[teamIndex + 4] || "",
-          Set2: cells[teamIndex + 5] || "",
-          Set3: cells[teamIndex + 6] || "",
-          SetD: cells[teamIndex + 7] || "",
-          points: cells[teamIndex + 8] || "",
-          highlight: cells[teamIndex] === "Sharks",
-          position: division3.length + 1,
-          promotion: division3.length < 2
-        });
-      }
+  const division3 = [];
 
-      tbody.innerHTML = division3.map(r => `
-        <tr class="${r.highlight ? 'highlight-sharks' : ''} ${r.promotion ? 'promotion-row' : ''}">
-          <td>${r.position}</td>
-          <td>${r.team}</td>
-          <td>${r.played}</td>
-          <td>${r.won}</td>
-          <td>${r.drawn}</td>
-          <td>${r.Set1}</td>
-          <td>${r.Set2}</td>
-          <td>${r.Set3}</td>
-          <td>${r.SetD}</td>
-          <td>${r.points}</td>
-        </tr>
-      `).join("");
+  for (const tr of rows) {
+    const cells = [...tr.querySelectorAll("td")].map(td => normalise(td.textContent));
 
-    } catch (err) {
-      console.error(err);
-      tbody.innerHTML = `<tr><td colspan="6">Error loading Division 3</td></tr>`;
-    }
+    // Skip rows that don't have enough columns
+    if (cells.length < 10) continue;
+
+    // Left-hand team is always column 0
+    const team = cells[0];
+
+    // Only process Premier Division teams
+    if (!premierTeams.includes(team)) continue;
+
+    division3.push({
+      team,
+      played: cells[1] || "",
+      won: cells[2] || "",
+      drawn: cells[3] || "",
+      Set1: cells[4] || "",
+      Set2: cells[5] || "",
+      Set3: cells[6] || "",
+      SetD: cells[7] || "",
+      points: cells[8] || "",
+      highlight: team === "Wye Emms",
+      position: division3.length + 1,
+      promotion: division3.length < 2
+    });
   }
+
+  // 5. Render
+  tbody.innerHTML = division3.map(r => `
+    <tr class="${r.highlight ? 'Wye Emms' : ''} ${r.promotion ? 'promotion-row' : ''}">
+      <td>${r.position}</td>
+      <td>${r.team}</td>
+      <td>${r.played}</td>
+      <td>${r.won}</td>
+      <td>${r.drawn}</td>
+      <td>${r.Set1}</td>
+      <td>${r.Set2}</td>
+      <td>${r.Set3}</td>
+      <td>${r.SetD}</td>
+      <td>${r.points}</td>
+    </tr>
+  `).join("");
+
+} catch (err) {
+  console.error(err);
+  tbody.innerHTML = `<tr><td colspan="6">Error loading Division 3</td></tr>`;
+}
+}
 
   loadNextFixture();
   loadTopScorers();

@@ -19,9 +19,11 @@
 
 <body>
 
+<!-- Shared navigation -->
 <div id="nav-placeholder"></div>
 
 <script>
+  // Load shared nav
   fetch("Nav.html")
     .then(r => r.text())
     .then(html => {
@@ -32,9 +34,8 @@
   function initNav() {
     const page = window.location.pathname.split("/").pop().toLowerCase();
     document.querySelectorAll(".gh-tabs a").forEach(link => {
-      if (link.getAttribute("href").toLowerCase().includes(page)) {
-        link.classList.add("active");
-      }
+      const href = link.getAttribute("href").toLowerCase();
+      if (href.includes(page)) link.classList.add("active");
     });
   }
 </script>
@@ -51,10 +52,10 @@
       <th colspan="10"><div id="AwayTeam"></div></th>
     </tr>
     <tr>
-      <th>Home Player</th>
+      <th>Away Player</th>
       <th colspan="8">Home Balls</th>
       <th>Total</th>
-      <th>Away Player</th>
+      <th>Home Player</th>
       <th colspan="8">Away Balls</th>
       <th>Total</th>
     </tr>
@@ -67,107 +68,91 @@
 <script type="module">
   import { supabase } from "./supabase.js";
 
-  // Highlight spare balls
+  // Highlight spare scores
   function highlightCell(score) {
     return score > 9
       ? `<td class="spare_cell">${score}</td>`
       : `<td>${score}</td>`;
   }
 
-  // Convert "Wednesday 09-09-2026" → "2026-09-09"
-  function normaliseDate(str) {
-  // Extract the DD-MM-YYYY part reliably
-  const dmy = str.match(/\d{1,2}-\d{1,2}-\d{4}/)[0];
-
-  let [dd, mm, yyyy] = dmy.split("-");
-
-  // Pad single digits
-  if (dd.length === 1) dd = "0" + dd;
-  if (mm.length === 1) mm = "0" + mm;
-
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-  // Flexible URL parsing
+  // Read team from URL
   const params = new URLSearchParams(window.location.search);
-
-  let teamName = params.get("team");
-
-  if (!teamName) {
-    const firstKey = [...params.keys()][0];
-    if (firstKey && firstKey.toLowerCase() !== "team") {
-      teamName = firstKey;
-    }
-  }
-
-  teamName = teamName || "Sharks";
-
+  const teamName = params.get("team") || "Sharks";
   document.getElementById("pageTitle").innerText = `${teamName} – Match Viewer`;
 
   async function loadMatches() {
+    // Load all scores for this team
+    const { data: scores } = await supabase
+      .from("all_scores")
+      .select("*")
+      .eq("team_name", teamName)
 
-  const { data: fixtures, error: fxErr } = await supabase.rpc(
-    "tmsl_get_allfixtures",
-    { team: teamName }
-  );
+      .order("GameDate", { ascending: false });
 
-  if (fxErr) {
-    console.error(fxErr);
-    return;
-  }
+    const matchSelect = document.getElementById("matchSelect");
 
-  const matchSelect = document.getElementById("matchSelect");
+    const dates = [...new Set(scores.map(r => r.GameDate))];
 
-  fixtures.forEach(fx => {
-    const fixedDate = normaliseDate(fx.game_date);
-    const matchDate = new Date(fixedDate);
-    const today = new Date();
+    for (const date of dates) {
+      const { data: fx } = await supabase.rpc(
+        "TMSL_get_fixture_for_team_on_date",
+        { team_namein: teamName, game_date: date }
+      );
 
-    if (matchDate <= today) {
+      let label = date;
+
+      if (fx && fx.length > 0) {
+        const home = fx[0].home_team_name;
+        const away = fx[0].away_team_name;
+
+        const isHome = home === teamName;
+        const opponent = isHome ? away : home;
+        const ha = isHome ? "(H)" : "(A)";
+
+        label = `${date} ${ha} ${opponent}`;
+      }
+
       const opt = document.createElement("option");
-      opt.value = fixedDate;
-      opt.textContent = `${fx.game_date} – ${fx.home_away} vs ${fx.opposition}`;
+      opt.value = date;
+      opt.textContent = label;
       matchSelect.appendChild(opt);
     }
-  });
 
-  // ⭐ FIX: load the first *played* match, not the first fixture
-  if (matchSelect.options.length > 0) {
-    loadMatchTable(matchSelect.options[0].value);
+    if (dates.length > 0) {
+      loadMatchTable(scores, dates[0]);
+    }
+
+    matchSelect.addEventListener("change", () => {
+      loadMatchTable(scores, matchSelect.value);
+    });
   }
 
-  matchSelect.addEventListener("change", () => {
-    loadMatchTable(matchSelect.value);
-  });
-}
+  async function loadMatchTable(allRows, selectedDate) {
+    const handOrder = { Front: 1, Middle: 2, Back: 3 };
 
-
-  async function loadMatchTable(selectedDate) {
-
-    console.log("DEBUG → Calling RPC tmsl_get_match_scores with:", {
-  team_namein: teamName,
-  game_date: selectedDate
-});
-    const { data: rows, error } = await supabase.rpc(
-      "tmsl_get_match_scores",
-      {  team_namein: teamName, game_date: selectedDate}
-    );
-
-    if (error) {
-      console.error(error);
-      return;
-    }
+    const rows = allRows
+      .filter(r => r.GameDate === selectedDate)
+      .sort((a, b) => {
+        const h = handOrder[a.Hand] - handOrder[b.Hand];
+        if (h !== 0) return h;
+        return a.id - b.id;
+      });
 
     const tbody = document.querySelector("#matchTable tbody");
     tbody.innerHTML = "";
 
-    if (!rows || rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="20">No match data found.</td></tr>`;
-      return;
-    }
+    const { data: fx } = await supabase.rpc(
+      "TMSL_get_fixture_for_team_on_date",
+      { team_namein: teamName, game_date: selectedDate }
+    );
 
-    const homeTeamName = rows[0].home_team_name;
-    const awayTeamName = rows[0].away_team_name;
+    let homeTeamName = "Unknown";
+    let awayTeamName = "Unknown";
+
+    if (fx && fx.length > 0) {
+      homeTeamName = fx[0].home_team_name;
+      awayTeamName = fx[0].away_team_name;
+    }
 
     document.getElementById("HomeTeam").innerText = homeTeamName;
     document.getElementById("AwayTeam").innerText = awayTeamName;
@@ -177,44 +162,41 @@
     let backHome = 0, backAway = 0;
 
     rows.forEach(row => {
-
       const homeBalls = [
-        row.home_ball1, row.home_ball2, row.home_ball3, row.home_ball4,
-        row.home_ball5, row.home_ball6, row.home_ball7, row.home_ball8
+        row.HomeBall1, row.HomeBall2, row.HomeBall3, row.HomeBall4,
+        row.HomeBall5, row.HomeBall6, row.HomeBall7, row.HomeBall8
       ];
 
       const awayBalls = [
-        row.away_ball1, row.away_ball2, row.away_ball3, row.away_ball4,
-        row.away_ball5, row.away_ball6, row.away_ball7, row.away_ball8
+        row.AwayBall1, row.AwayBall2, row.AwayBall3, row.AwayBall4,
+        row.AwayBall5, row.AwayBall6, row.AwayBall7, row.AwayBall8
       ];
 
       const homeTotal = homeBalls.reduce((a,b) => a+b, 0);
       const awayTotal = awayBalls.reduce((a,b) => a+b, 0);
 
-      if (row.hand === "Front") {
+      if (row.Hand === "Front") {
         frontHome += homeTotal;
         frontAway += awayTotal;
       }
-      if (row.hand === "Middle") {
+      if (row.Hand === "Middle") {
         middleHome += homeTotal;
         middleAway += awayTotal;
       }
-      if (row.hand === "Back") {
+      if (row.Hand === "Back") {
         backHome += homeTotal;
         backAway += awayTotal;
       }
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-  	
-	  <td>${row.home_player}</td>
-	  ${homeBalls.map(b => highlightCell(b)).join("")}
-	  <td><strong>${homeTotal}</strong></td>
-         <td>${row.away_player}</td>
- 	 ${awayBalls.map(b => highlightCell(b)).join("")}
- 	 <td><strong>${awayTotal}</strong></td>
-	`;
-
+        <td>${row.Away_Player}</td>
+        ${homeBalls.map(b => highlightCell(b)).join("")}
+        <td><strong>${homeTotal}</strong></td>
+        <td>${row.Home_Player}</td>
+        ${awayBalls.map(b => highlightCell(b)).join("")}
+        <td><strong>${awayTotal}</strong></td>
+      `;
       tbody.appendChild(tr);
     });
 

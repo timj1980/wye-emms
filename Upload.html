@@ -2,103 +2,47 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Sharks Score Entry</title>
+  <title>Score Entry</title>
   <style>
     body { font-family: Arial; padding: 20px; }
     .step { display: none; }
     .step.active { display: block; }
-
     h2 { margin-top: 0; }
-
     label { display: block; margin-top: 10px; font-weight: bold; }
-
-    input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      font-size: 1.1rem;
-      box-sizing: border-box;
+    input[type="text"], input[type="number"], select {
+      width: 100%; padding: 10px; margin-top: 5px;
+      font-size: 1.1rem; box-sizing: border-box;
     }
-
-    select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      font-size: 1.1rem;
-      box-sizing: border-box;
-    }
-
     .player-block {
-      margin-bottom: 25px;
-      padding: 15px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      margin-bottom: 25px; padding: 15px;
+      border: 1px solid #ccc; border-radius: 8px;
     }
-
     .balls {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 4px;
-      margin-top: 10px;
+      display: grid; grid-template-columns: repeat(8, 1fr);
+      gap: 4px; margin-top: 10px;
     }
-
     .balls input {
-      width: 40px;
-      padding: 6px;
-      font-size: 16px;
-      text-align: center;
+      width: 40px; padding: 6px; font-size: 16px; text-align: center;
     }
-
-
-
-    .totals {
-      margin-top: 10px;
-      font-size: 1rem;
-      font-weight: bold;
-    }
-
+    .totals { margin-top: 10px; font-size: 1rem; font-weight: bold; }
     .summary-block {
-      padding: 12px;
-      margin-bottom: 15px;
-      background: #f3f3f3;
-      border-radius: 8px;
-      font-size: 1rem;
+      padding: 12px; margin-bottom: 15px;
+      background: #f3f3f3; border-radius: 8px; font-size: 1rem;
     }
-
     button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 20px;
-      font-size: 1.2rem;
-      background: #0a7;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+      width: 100%; padding: 14px; margin-top: 20px;
+      font-size: 1.2rem; background: #0a7; color: white;
+      border: none; border-radius: 8px; cursor: pointer;
     }
-
-    .secondary {
-      background: #555;
-    }
-
+    .secondary { background: #555; }
     .hand-total-box {
-      background: #eef2f5;
-      padding: 12px;
-      margin: 15px 0;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 1.0rem;
+      background: #eef2f5; padding: 12px; margin: 15px 0;
+      border-radius: 8px; font-weight: bold; font-size: 1.0rem;
     }
-
     #leadBanner {
-      position: sticky;
-      top: 0;
-      background: #003366;
-      color: white;
-      padding: 12px;
-      font-size: 1.1rem;
-      border-bottom: 3px solid #ffaa00;
-      z-index: 999;
+      position: sticky; top: 0; background: #003366;
+      color: white; padding: 12px; font-size: 1.1rem;
+      border-bottom: 3px solid #ffaa00; z-index: 999;
       margin: -20px -20px 20px -20px;
     }
   </style>
@@ -111,9 +55,15 @@
   <span id="gameLeadText">Game level</span>
 </div>
 
-<h1>Sharks Score Entry</h1>
+<h1>Score Entry</h1>
 
 <input type="hidden" id="Season" value="2026/27">
+
+<label>Team Name:</label>
+<input type="text" id="TeamName" placeholder="e.g. Wye Emms">
+
+<button id="loadTeamBtn">Load Fixtures</button>
+
 
 <label>Game:</label>
 <select id="GameSelect"></select>
@@ -121,6 +71,9 @@
 <!-- FRONT HAND -->
 <div id="step1" class="step active">
   <h2>Front Hand</h2>
+  <div class="hand-total-box" style="display: none">
+    Front Hand Total: <span id="FrontHandTotal">0</span>
+  </div>
 
   <!-- FH1 -->
   <div class="player-block">
@@ -188,10 +141,6 @@
     </div>
   </div>
 
-  <div class="hand-total-box" style="visibility: hidden">
-    Front Hand Total: <span id="FrontHandTotal">0</span>
-  </div>
-
   <div id="FrontHandBreakdown" class="hand-total-box"></div>
 
   <button id="next1">Next: Middle Hand</button>
@@ -200,6 +149,9 @@
 <!-- MIDDLE HAND -->
 <div id="step2" class="step">
   <h2>Middle Hand</h2>
+  <div class="hand-total-box" style="visibility: hidden">
+    Middle Hand Total: <span id="MiddleHandTotal">0</span>
+  </div>
 
   <!-- MH1 -->
   <div class="player-block">
@@ -267,10 +219,6 @@
     </div>
   </div>
 
-  <div class="hand-total-box" style="visibility: hidden">
-    Middle Hand Total: <span id="MiddleHandTotal">0</span>
-  </div>
-
   <div id="MiddleHandBreakdown" class="hand-total-box"></div>
 
   <button class="secondary" id="back1">Back</button>
@@ -280,6 +228,9 @@
 <!-- BACK HAND -->
 <div id="step3" class="step">
   <h2>Back Hand</h2>
+  <div class="hand-total-box" style="visibility: hidden">
+    Back Hand Total: <span id="BackHandTotal">0</span>
+  </div>
 
   <!-- BH1 -->
   <div class="player-block">
@@ -369,10 +320,6 @@
     </div>
   </div>
 
-  <div class="hand-total-box" style="visibility: hidden">
-    Back Hand Total: <span id="BackHandTotal">0</span>
-  </div>
-
   <div id="BackHandBreakdown" class="hand-total-box"></div>
 
   <button class="secondary" id="back2">Back</button>
@@ -403,14 +350,15 @@
   function showStep(n) {
     document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
     document.getElementById(`step${n}`).classList.add("active");
+    updateBreakdown(); // Refresh banner and active breakdown on step change
   }
 
-  next1.onclick = () => showStep(2);
-  back1.onclick = () => showStep(1);
-  next2.onclick = () => showStep(3);
-  back2.onclick = () => showStep(2);
-  summaryBack.onclick = () => showStep(3);
-
+  document.getElementById("next1").onclick = () => showStep(2);
+  document.getElementById("back1").onclick = () => showStep(1);
+  document.getElementById("next2").onclick = () => showStep(3);
+  document.getElementById("back2").onclick = () => showStep(2);
+  document.getElementById("summaryBack").onclick = () => showStep(3);
+ // document.getElementById("fillDummy").onclick = fillDummyData;
   function setupTotals(prefix) {
     function update() {
       let home = 0;
@@ -423,7 +371,7 @@
       document.getElementById(`${prefix}_AwayTotal`).textContent = away;
 
       updateHandTotals();
-      updateBreakdown();
+      updateBreakdown(); // Refresh banner on ball input change
     }
 
     for (let i = 1; i <= 8; i++) {
@@ -480,15 +428,15 @@
     let MH = handTotals(groups.Middle);
     let BH = handTotals(groups.Back);
 
-    if (currentHand === "Front") {
-      return FH;
-    }
+    if (currentHand === "Front") return FH;
+
     if (currentHand === "Middle") {
       return {
         home: FH.home + MH.home,
         away: FH.away + MH.away
       };
     }
+
     if (currentHand === "Back") {
       return {
         home: FH.home + MH.home + BH.home,
@@ -497,41 +445,58 @@
     }
   }
 
-function updateBanner(handHome, handAway, gameHome, gameAway) {
-
-  const sel = document.getElementById("GameSelect");
-  const oppositionName = sel.options[sel.selectedIndex].dataset.opposition || "Opposition";
-
-  const handLead = handHome - handAway;
-  const gameLead = gameHome - gameAway;
-
-  const handSpan = document.getElementById("handLeadText");
-  const gameSpan = document.getElementById("gameLeadText");
-
-  // Hand text
-  if (handLead > 0) {
-    handSpan.textContent = `Sharks lead Hand by ${handLead}`;
-    handSpan.style.color = "limegreen";
-  } else if (handLead < 0) {
-    handSpan.textContent = `${oppositionName} lead Hand by ${Math.abs(handLead)}`;
-    handSpan.style.color = "red";
-  } else {
-    handSpan.textContent = `Hand level`;
-    handSpan.style.color = "white";
+ function isTeamHome() {
+    const sel = document.getElementById("GameSelect");
+    if (sel.selectedIndex < 0) return true;
+    const selectedOpt = sel.options[sel.selectedIndex];
+    // Check dataset or default to Home
+    return selectedOpt.dataset.homeAway !== "Away";
   }
 
-  // Game text
-  if (gameLead > 0) {
-    gameSpan.textContent = `Sharks lead Game by ${gameLead}`;
-    gameSpan.style.color = "limegreen";
-  } else if (gameLead < 0) {
-    gameSpan.textContent = `${oppositionName} lead Game by ${Math.abs(gameLead)}`;
-    gameSpan.style.color = "red";
-  } else {
-    gameSpan.textContent = `Game level`;
-    gameSpan.style.color = "white";
+  function updateBanner(handHome, handAway, gameHome, gameAway) {
+    const teamName = document.getElementById("TeamName").value.trim() || "Team";
+    const sel = document.getElementById("GameSelect");
+    const oppositionName = (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex].dataset.opposition)
+      ? sel.options[sel.selectedIndex].dataset.opposition 
+      : "Opposition";
+
+    const teamIsHome = isTeamHome();
+
+    // Map totals based on Home/Away status
+    const teamHandScore = teamIsHome ? handHome : handAway;
+    const oppHandScore = teamIsHome ? handAway : handHome;
+
+    const teamGameScore = teamIsHome ? gameHome : gameAway;
+    const oppGameScore = teamIsHome ? gameAway : gameHome;
+
+    const handLead = teamHandScore - oppHandScore;
+    const gameLead = teamGameScore - oppGameScore;
+
+    const handSpan = document.getElementById("handLeadText");
+    const gameSpan = document.getElementById("gameLeadText");
+
+    if (handLead > 0) {
+      handSpan.textContent = `${teamName} lead Hand by ${handLead}`;
+      handSpan.style.color = "limegreen";
+    } else if (handLead < 0) {
+      handSpan.textContent = `${oppositionName} lead Hand by ${Math.abs(handLead)}`;
+      handSpan.style.color = "red";
+    } else {
+      handSpan.textContent = `Hand level`;
+      handSpan.style.color = "white";
+    }
+
+    if (gameLead > 0) {
+      gameSpan.textContent = `${teamName} lead Game by ${gameLead}`;
+      gameSpan.style.color = "limegreen";
+    } else if (gameLead < 0) {
+      gameSpan.textContent = `${oppositionName} lead Game by ${Math.abs(gameLead)}`;
+      gameSpan.style.color = "red";
+    } else {
+      gameSpan.textContent = `Game level`;
+      gameSpan.style.color = "white";
+    }
   }
-}
 
   function makeBlock(handName, prefixes) {
     let thisHand = handTotals(prefixes);
@@ -539,10 +504,7 @@ function updateBanner(handHome, handAway, gameHome, gameAway) {
 
     updateBanner(thisHand.home, thisHand.away, running.home, running.away);
 
-    let html = `
-      <strong>${handName} Hand</strong><br>
-      <br>
-    `;
+    let html = `<strong>${handName} Hand</strong><br><br>`;
 
     prefixes.forEach(p => {
       const hp = document.getElementById(`${p}_Home_Player`).value || "";
@@ -582,22 +544,25 @@ function updateBanner(handHome, handAway, gameHome, gameAway) {
     }
   }
 
+
+
   function buildRow(hand, prefix, date, season) {
-  const row = {
-    GameDate: date,
-    Season: season,
-    Hand: hand,
-    Home_Player: document.getElementById(`${prefix}_Home_Player`).value,
-    Away_Player: document.getElementById(`${prefix}_Away_Player`).value
-  };
+    const row = {
+      gamedate: date,
+      season: season,
+      hand: hand,
+      home_player: document.getElementById(`${prefix}_Home_Player`).value,
+      away_player: document.getElementById(`${prefix}_Away_Player`).value
+      
+    };
 
-  for (let i = 1; i <= 8; i++) {
-    row[`HomeBall${i}`] = Number(document.getElementById(`${prefix}_HomeBall${i}`).value) || 0;
-    row[`AwayBall${i}`] = Number(document.getElementById(`${prefix}_AwayBall${i}`).value) || 0;
+    for (let i = 1; i <= 8; i++) {
+      row[`homeball${i}`] = Number(document.getElementById(`${prefix}_HomeBall${i}`).value) || 0;
+      row[`awayball${i}`] = Number(document.getElementById(`${prefix}_AwayBall${i}`).value) || 0;
+    }
+
+    return row;
   }
-
-  return row;
-}
 
   function buildSummary() {
     const groupsSummary = [
@@ -631,6 +596,9 @@ function updateBanner(handHome, handAway, gameHome, gameAway) {
 
     document.getElementById("summaryContent").innerHTML = html;
   }
+
+
+
 
   function calculateHandTotals() {
     const hands = {
@@ -674,7 +642,56 @@ function updateBanner(handHome, handAway, gameHome, gameAway) {
     `;
   }
 
-  submitMatch.onclick = () => {
+async function fillDummyData() {
+
+  // Fill player names for FH, MH, BH
+  const groups = {
+    FH: ["FH1", "FH2", "FH3"],
+    MH: ["MH1", "MH2", "MH3"],
+    BH: ["BH1", "BH2", "BH3", "BH4"]
+  };
+
+  Object.entries(groups).forEach(([prefix, players]) => {
+    players.forEach((p, index) => {
+      const homeField = document.getElementById(`${p}_Home_Player`);
+      const awayField = document.getElementById(`${p}_Away_Player`);
+
+      if (homeField) homeField.value = `HomePlayer${index + 1}`;
+      if (awayField) awayField.value = `AwayPlayer${index + 1}`;
+    });
+  });
+
+  // Fill ball scores FH_, MH_, BH_
+  ["FH1", "FH2", "FH3","MH1", "MH2", "MH3","BH1", "BH2", "BH3", "BH4"].forEach(prefix => {
+    for (let i = 1; i <= 8; i++) {
+      const hb = document.getElementById(`${prefix}_HomeBall${i}`);
+      const ab = document.getElementById(`${prefix}_AwayBall${i}`);
+
+      if (hb) hb.value = Math.floor(Math.random() * 9) + 1;
+      if (ab) ab.value = Math.floor(Math.random() * 9) + 1;
+    }
+  });
+// Force totals to update after dummy data is inserted
+updateHandTotals();
+updateBreakdown();
+calculateHandTotals();
+updateBanner();
+console.log("Testing RPC…");
+
+
+const { data: rpcTest, error: rpcError } = await supabase
+  .rpc("tmsl_get_allfixtures", { team_namein: teamName });
+
+if (rpcError) {
+  console.error("RPC test failed:", rpcError);
+} else {
+  console.log("RPC test result:", rpcTest);
+}
+
+
+}
+
+  document.getElementById("submitMatch").onclick = () => {
     buildSummary();
     calculateHandTotals();
     showStep(4);
@@ -684,22 +701,48 @@ function updateBanner(handHome, handAway, gameHome, gameAway) {
   let nextFixture = null;
 
   function parseFixtureDate(str) {
-    // "Friday 02-10-2026" -> "2026-10-02"
     const parts = str.split(" ");
-    const datePart = parts[1]; // "02-10-2026"
+    const datePart = parts[1];
     const [dd, mm, yyyy] = datePart.split("-");
     return `${yyyy}-${mm}-${dd}`;
   }
 
+let teamLookup = {};
+
+async function loadTeamLookup() {
+  const { data, error } = await supabase
+    .from("Teams")
+    .select('id, "Team ID"');
+
+  if (error) {
+    console.error("Team lookup failed:", error);
+    return;
+  }
+
+  teamLookup = Object.fromEntries(
+    data.map(t => [String(t["Team ID"]).trim(), t.id])
+  );
+
+console.log("Teams returned:", data);
+console.log("Lookup map:", teamLookup);
+  console.log("Team lookup loaded:", teamLookup);
+}
+
   async function loadFixtures() {
+    const team = document.getElementById("TeamName").value.trim();
+    if (!team) {
+      alert("Please enter a team name.");
+      return;
+    }
+
     const { data: allData } = await supabase.rpc(
-      'get_fixtures_by_team',
-      { team: 'Sharks' }
+      'tmsl_get_allfixtures',
+      { team }
     );
 
     const { data: nextData } = await supabase.rpc(
       'get_next_team_fixture',
-      { team_id: 12, season: '2026/27', division: 'Division 3' }
+      { team_id: null, season: "2026/27", division: null }
     );
 
     fixtures = (allData || []).map(fx => {
@@ -709,7 +752,12 @@ function updateBanner(handHome, handAway, gameHome, gameAway) {
         iso_date: iso,
         home_away: fx.home_away,
         alley: fx.alley,
-        opposition: fx.opposition
+        opposition: fx.opposition,
+        home_team_id: fx.home_team_id,    
+        away_team_id: fx.away_team_id,
+        home_team_pk: fx.home_team_pk,
+        away_team_pk: fx.away_team_pk,
+        match_type: fx.match_type     
       };
     });
 
@@ -725,7 +773,8 @@ function updateBanner(handHome, handAway, gameHome, gameAway) {
       const opt = document.createElement("option");
       opt.value = fx.iso_date;
       opt.dataset.opposition = fx.opposition;
-      opt.textContent = `${dd}/${mm}/${yyyy} – ${fx.opposition}`;
+      opt.dataset.homeAway = fx.home_away; // Store whether team is Home or Away
+      opt.textContent = `${dd}/${mm}/${yyyy} – ${fx.opposition} (${fx.home_away || 'H'})`;
       sel.appendChild(opt);
     });
 
@@ -745,15 +794,66 @@ function updateBanner(handHome, handAway, gameHome, gameAway) {
     }
   }
 
-  loadFixtures();
+  // Load Fixtures click handler
 
-  summarySubmit.onclick = async () => {
-    const sel = document.getElementById("GameSelect");
-    const date = sel.value;
-    const season = document.getElementById("Season").value || "2026/27";
-    const opposition = sel.options[sel.selectedIndex].dataset.opposition || "";
+  document.getElementById("loadTeamBtn").onclick = async () => {
+  await loadTeamLookup();
+  await loadFixtures();
 
-    const payload = [
+  const sel = document.getElementById("GameSelect");
+  const date = sel.value;
+
+  const selectedFixture = fixtures.find(f => f.iso_date === date);
+
+  console.log("Lookup map:", teamLookup);
+  console.log("Fixture home_team_id:", selectedFixture?.home_team_id);
+  console.log("Resolved PK:", teamLookup[String(selectedFixture?.home_team_id).trim()]);
+
+  updateBreakdown();
+};
+
+  // Trigger banner update when team name or game selection changes
+  document.getElementById("TeamName").addEventListener("input", updateBreakdown);
+  document.getElementById("GameSelect").addEventListener("change", updateBreakdown);
+
+ summarySubmit.onclick = async () => {
+
+  const sel = document.getElementById("GameSelect");
+  const date = sel.value;
+  const season = document.getElementById("Season").value || "2026/27";
+  const oppositionName = sel.options[sel.selectedIndex].dataset.opposition || "";
+
+  // Find the selected fixture from the fixtures array
+  const selectedFixture = fixtures.find(f => f.iso_date === date);
+
+  if (!selectedFixture) {
+    result.textContent = "Error: Fixture not found in loaded fixtures.";
+    return;
+  }
+
+  const homeTeamID = selectedFixture.home_team_id;
+  const awayTeamID = selectedFixture.away_team_id;
+
+console.log("Selected fixture:", selectedFixture);
+console.log("Home away:", selectedFixture.home_away);
+console.log("home_team_pk:", selectedFixture.home_team_pk);
+console.log("away_team_pk:", selectedFixture.away_team_pk);
+
+
+ const actualHomePK =
+  selectedFixture.home_away === "Home"
+    ? selectedFixture.home_team_pk
+    : selectedFixture.home_team_pk;
+
+const actualAwayPK =
+  selectedFixture.home_away === "Home"
+    ? selectedFixture.away_team_pk
+    : selectedFixture.away_team_pk;
+
+console.log("Actual home PK:", actualHomePK);
+console.log(selectedFixture.away_team_pk);
+
+const payload = [
   buildRow("Front", "FH1", date, season),
   buildRow("Front", "FH2", date, season),
   buildRow("Front", "FH3", date, season),
@@ -766,15 +866,32 @@ function updateBanner(handHome, handAway, gameHome, gameAway) {
   buildRow("Back", "BH2", date, season),
   buildRow("Back", "BH3", date, season),
   buildRow("Back", "BH4", date, season)
-];
+].map(row => ({
+  ...row,
 
-    const { data, error } = await supabase
-      .from('Sharks_scores')
-      .insert(payload);
+  // ⭐ Only store the actual home team PK
+  home_team_pk: actualHomePK,
 
-    result.textContent = error ? "Error: " + error.message : "Match uploaded!";
-    showStep(1);
-  };
+  // ⭐ League IDs still useful for filtering
+ 
+
+  match_type: selectedFixture.match_type,
+  cup_round: selectedFixture.cup_round || null,
+  away_team_pk: actualAwayPK
+  
+}));
+
+
+
+  const { error } = await supabase
+    .from('all_scores')
+    .insert(payload);
+
+  result.textContent = error ? "Error: " + error.message : "Match uploaded!";
+  showStep(1);
+};
+
+
 </script>
 
 </body>
