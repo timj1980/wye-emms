@@ -105,7 +105,6 @@
   document.getElementById("pageTitle").innerText = `${teamName} – Match Viewer`;
 
   async function loadMatches() {
-
   const { data: fixtures, error: fxErr } = await supabase.rpc(
     "tmsl_get_allfixtures",
     { team: teamName }
@@ -118,21 +117,30 @@
 
   const matchSelect = document.getElementById("matchSelect");
 
-  fixtures.forEach(fx => {
+  // Filter played matches
+  const today = new Date();
+  const playedMatches = fixtures.filter(fx => {
     const fixedDate = normaliseDate(fx.game_date);
-    const matchDate = new Date(fixedDate);
-    const today = new Date();
-
-    if (matchDate <= today) {
-      const opt = document.createElement("option");
-      opt.value = fixedDate;
-      opt.textContent = `${fx.game_date} – ${fx.home_away} vs ${fx.opposition}`;
-      matchSelect.appendChild(opt);
-    }
+    return new Date(fixedDate) <= today;
   });
 
-  // ⭐ FIX: load the first *played* match, not the first fixture
+  // Sort descending (most recent match first)
+  playedMatches.sort((a, b) => {
+    return new Date(normaliseDate(b.game_date)) - new Date(normaliseDate(a.game_date));
+  });
+
+  // Populate select dropdown
+  playedMatches.forEach(fx => {
+    const fixedDate = normaliseDate(fx.game_date);
+    const opt = document.createElement("option");
+    opt.value = fixedDate;
+    opt.textContent = `${fx.game_date} – ${fx.home_away} vs ${fx.opposition}`;
+    matchSelect.appendChild(opt);
+  });
+
+  // Load the top (most recent) match automatically
   if (matchSelect.options.length > 0) {
+    matchSelect.selectedIndex = 0;
     loadMatchTable(matchSelect.options[0].value);
   }
 
