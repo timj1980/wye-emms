@@ -350,7 +350,7 @@
   function showStep(n) {
     document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
     document.getElementById(`step${n}`).classList.add("active");
-    updateBreakdown(); // Refresh banner and active breakdown on step change
+    updateBreakdown();
   }
 
   document.getElementById("next1").onclick = () => showStep(2);
@@ -358,7 +358,7 @@
   document.getElementById("next2").onclick = () => showStep(3);
   document.getElementById("back2").onclick = () => showStep(2);
   document.getElementById("summaryBack").onclick = () => showStep(3);
- // document.getElementById("fillDummy").onclick = fillDummyData;
+
   function setupTotals(prefix) {
     function update() {
       let home = 0;
@@ -371,7 +371,7 @@
       document.getElementById(`${prefix}_AwayTotal`).textContent = away;
 
       updateHandTotals();
-      updateBreakdown(); // Refresh banner on ball input change
+      updateBreakdown();
     }
 
     for (let i = 1; i <= 8; i++) {
@@ -445,15 +445,14 @@
     }
   }
 
- function isTeamHome() {
+  function isTeamHome() {
     const sel = document.getElementById("GameSelect");
     if (sel.selectedIndex < 0) return true;
     const selectedOpt = sel.options[sel.selectedIndex];
-    // Check dataset or default to Home
     return selectedOpt.dataset.homeAway !== "Away";
   }
 
-  function updateBanner(handHome, handAway, gameHome, gameAway) {
+  function updateBanner(handHome = 0, handAway = 0, gameHome = 0, gameAway = 0) {
     const teamName = document.getElementById("TeamName").value.trim() || "Team";
     const sel = document.getElementById("GameSelect");
     const oppositionName = (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex].dataset.opposition)
@@ -462,7 +461,6 @@
 
     const teamIsHome = isTeamHome();
 
-    // Map totals based on Home/Away status
     const teamHandScore = teamIsHome ? handHome : handAway;
     const oppHandScore = teamIsHome ? handAway : handHome;
 
@@ -544,8 +542,6 @@
     }
   }
 
-
-
   function buildRow(hand, prefix, date, season) {
     const row = {
       gamedate: date,
@@ -553,7 +549,6 @@
       hand: hand,
       home_player: document.getElementById(`${prefix}_Home_Player`).value,
       away_player: document.getElementById(`${prefix}_Away_Player`).value
-      
     };
 
     for (let i = 1; i <= 8; i++) {
@@ -597,9 +592,6 @@
     document.getElementById("summaryContent").innerHTML = html;
   }
 
-
-
-
   function calculateHandTotals() {
     const hands = {
       Front: ["FH1", "FH2", "FH3"],
@@ -642,55 +634,6 @@
     `;
   }
 
-async function fillDummyData() {
-
-  // Fill player names for FH, MH, BH
-  const groups = {
-    FH: ["FH1", "FH2", "FH3"],
-    MH: ["MH1", "MH2", "MH3"],
-    BH: ["BH1", "BH2", "BH3", "BH4"]
-  };
-
-  Object.entries(groups).forEach(([prefix, players]) => {
-    players.forEach((p, index) => {
-      const homeField = document.getElementById(`${p}_Home_Player`);
-      const awayField = document.getElementById(`${p}_Away_Player`);
-
-      if (homeField) homeField.value = `HomePlayer${index + 1}`;
-      if (awayField) awayField.value = `AwayPlayer${index + 1}`;
-    });
-  });
-
-  // Fill ball scores FH_, MH_, BH_
-  ["FH1", "FH2", "FH3","MH1", "MH2", "MH3","BH1", "BH2", "BH3", "BH4"].forEach(prefix => {
-    for (let i = 1; i <= 8; i++) {
-      const hb = document.getElementById(`${prefix}_HomeBall${i}`);
-      const ab = document.getElementById(`${prefix}_AwayBall${i}`);
-
-      if (hb) hb.value = Math.floor(Math.random() * 9) + 1;
-      if (ab) ab.value = Math.floor(Math.random() * 9) + 1;
-    }
-  });
-// Force totals to update after dummy data is inserted
-updateHandTotals();
-updateBreakdown();
-calculateHandTotals();
-updateBanner();
-console.log("Testing RPC…");
-
-
-const { data: rpcTest, error: rpcError } = await supabase
-  .rpc("tmsl_get_allfixtures", { team_namein: teamName });
-
-if (rpcError) {
-  console.error("RPC test failed:", rpcError);
-} else {
-  console.log("RPC test result:", rpcTest);
-}
-
-
-}
-
   document.getElementById("submitMatch").onclick = () => {
     buildSummary();
     calculateHandTotals();
@@ -698,52 +641,51 @@ if (rpcError) {
   };
 
   let fixtures = [];
-  let nextFixture = null;
 
   function parseFixtureDate(str) {
+    if (!str) return "";
     const parts = str.split(" ");
-    const datePart = parts[1];
+    const datePart = parts[1] || parts[0];
     const [dd, mm, yyyy] = datePart.split("-");
     return `${yyyy}-${mm}-${dd}`;
   }
 
-let teamLookup = {};
+  let teamLookup = {};
 
-async function loadTeamLookup() {
-  const { data, error } = await supabase
-    .from("Teams")
-    .select('id, "Team ID"');
+  async function loadTeamLookup() {
+    const { data, error } = await supabase
+      .from("Teams")
+      .select('id, "Team ID"');
 
-  if (error) {
-    console.error("Team lookup failed:", error);
-    return;
-  }
-
-  teamLookup = Object.fromEntries(
-    data.map(t => [String(t["Team ID"]).trim(), t.id])
-  );
-
-console.log("Teams returned:", data);
-console.log("Lookup map:", teamLookup);
-  console.log("Team lookup loaded:", teamLookup);
-}
-
-  async function loadFixtures() {
-    const team = document.getElementById("TeamName").value.trim();
-    if (!team) {
-      alert("Please enter a team name.");
+    if (error) {
+      console.error("Team lookup failed:", error);
       return;
     }
 
-    const { data: allData } = await supabase.rpc(
+    teamLookup = Object.fromEntries(
+      data.map(t => [String(t["Team ID"]).trim(), t.id])
+    );
+  }
+
+  async function loadFixtures() {
+    const team = document.getElementById("TeamName").value.trim();
+    if (!team) return;
+
+    // Load all team fixtures
+    const { data: allData, error: allErr } = await supabase.rpc(
       'tmsl_get_allfixtures',
-      { team }
+      { team_namein: team }
     );
 
-    const { data: nextData } = await supabase.rpc(
+    if (allErr) console.error("Error fetching all fixtures:", allErr);
+
+    // Load next fixture
+    const { data: nextData, error: nextErr } = await supabase.rpc(
       'get_next_team_fixture',
-      { team_id: null, season: "2026/27", division: null }
+      { team_id: team, season: document.getElementById("Season").value || "2026/27", division: null }
     );
+
+    if (nextErr) console.error("Error fetching next fixture:", nextErr);
 
     fixtures = (allData || []).map(fx => {
       const iso = parseFixtureDate(fx.game_date);
@@ -773,126 +715,96 @@ console.log("Lookup map:", teamLookup);
       const opt = document.createElement("option");
       opt.value = fx.iso_date;
       opt.dataset.opposition = fx.opposition;
-      opt.dataset.homeAway = fx.home_away; // Store whether team is Home or Away
+      opt.dataset.homeAway = fx.home_away;
       opt.textContent = `${dd}/${mm}/${yyyy} – ${fx.opposition} (${fx.home_away || 'H'})`;
       sel.appendChild(opt);
     });
 
+    // Auto-select Next Fixture in dropdown
     if (nextData && nextData[0]) {
       const nextIso = parseFixtureDate(nextData[0].game_date);
       sel.value = nextIso;
-      nextFixture = {
-        iso_date: nextIso,
-        opposition: nextData[0].opposition
-      };
     } else if (fixtures.length > 0) {
       sel.value = fixtures[0].iso_date;
-      nextFixture = {
-        iso_date: fixtures[0].iso_date,
-        opposition: fixtures[0].opposition
-      };
     }
+
+    updateBreakdown();
   }
 
-  // Load Fixtures click handler
+  // Combined fetch handler
+  async function initAndLoad() {
+    await loadTeamLookup();
+    await loadFixtures();
+  }
 
-  document.getElementById("loadTeamBtn").onclick = async () => {
-  await loadTeamLookup();
-  await loadFixtures();
+  // Button handler for manual reloads
+  document.getElementById("loadTeamBtn").onclick = initAndLoad;
 
-  const sel = document.getElementById("GameSelect");
-  const date = sel.value;
+  // Pressing Enter in team input reloads automatically
+  document.getElementById("TeamName").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      initAndLoad();
+    }
+  });
 
-  const selectedFixture = fixtures.find(f => f.iso_date === date);
-
-  console.log("Lookup map:", teamLookup);
-  console.log("Fixture home_team_id:", selectedFixture?.home_team_id);
-  console.log("Resolved PK:", teamLookup[String(selectedFixture?.home_team_id).trim()]);
-
-  updateBreakdown();
-};
-
-  // Trigger banner update when team name or game selection changes
-  document.getElementById("TeamName").addEventListener("input", updateBreakdown);
   document.getElementById("GameSelect").addEventListener("change", updateBreakdown);
 
- summarySubmit.onclick = async () => {
+  // AUTO-LOAD ON INITIAL PAGE VISIT
+  window.addEventListener("DOMContentLoaded", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const teamParam = urlParams.get("team") || urlParams.get("team_name");
 
-  const sel = document.getElementById("GameSelect");
-  const date = sel.value;
-  const season = document.getElementById("Season").value || "2026/27";
-  const oppositionName = sel.options[sel.selectedIndex].dataset.opposition || "";
+    if (teamParam) {
+      document.getElementById("TeamName").value = decodeURIComponent(teamParam);
+      await initAndLoad();
+    }
+  });
 
-  // Find the selected fixture from the fixtures array
-  const selectedFixture = fixtures.find(f => f.iso_date === date);
+  const summarySubmit = document.getElementById("summarySubmit");
+  summarySubmit.onclick = async () => {
+    const sel = document.getElementById("GameSelect");
+    const date = sel.value;
+    const season = document.getElementById("Season").value || "2026/27";
 
-  if (!selectedFixture) {
-    result.textContent = "Error: Fixture not found in loaded fixtures.";
-    return;
-  }
+    const selectedFixture = fixtures.find(f => f.iso_date === date);
 
-  const homeTeamID = selectedFixture.home_team_id;
-  const awayTeamID = selectedFixture.away_team_id;
+    if (!selectedFixture) {
+      document.getElementById("result").textContent = "Error: Fixture not found in loaded fixtures.";
+      return;
+    }
 
-console.log("Selected fixture:", selectedFixture);
-console.log("Home away:", selectedFixture.home_away);
-console.log("home_team_pk:", selectedFixture.home_team_pk);
-console.log("away_team_pk:", selectedFixture.away_team_pk);
+    const actualHomePK = selectedFixture.home_team_pk;
+    const actualAwayPK = selectedFixture.away_team_pk;
 
+    const payload = [
+      buildRow("Front", "FH1", date, season),
+      buildRow("Front", "FH2", date, season),
+      buildRow("Front", "FH3", date, season),
 
- const actualHomePK =
-  selectedFixture.home_away === "Home"
-    ? selectedFixture.home_team_pk
-    : selectedFixture.home_team_pk;
+      buildRow("Middle", "MH1", date, season),
+      buildRow("Middle", "MH2", date, season),
+      buildRow("Middle", "MH3", date, season),
 
-const actualAwayPK =
-  selectedFixture.home_away === "Home"
-    ? selectedFixture.away_team_pk
-    : selectedFixture.away_team_pk;
+      buildRow("Back", "BH1", date, season),
+      buildRow("Back", "BH2", date, season),
+      buildRow("Back", "BH3", date, season),
+      buildRow("Back", "BH4", date, season)
+    ].map(row => ({
+      ...row,
+      home_team_pk: actualHomePK,
+      away_team_pk: actualAwayPK,
+      match_type: selectedFixture.match_type,
+      cup_round: selectedFixture.cup_round || null
+    }));
 
-console.log("Actual home PK:", actualHomePK);
-console.log(selectedFixture.away_team_pk);
+    const { error } = await supabase
+      .from('all_scores')
+      .insert(payload);
 
-const payload = [
-  buildRow("Front", "FH1", date, season),
-  buildRow("Front", "FH2", date, season),
-  buildRow("Front", "FH3", date, season),
-
-  buildRow("Middle", "MH1", date, season),
-  buildRow("Middle", "MH2", date, season),
-  buildRow("Middle", "MH3", date, season),
-
-  buildRow("Back", "BH1", date, season),
-  buildRow("Back", "BH2", date, season),
-  buildRow("Back", "BH3", date, season),
-  buildRow("Back", "BH4", date, season)
-].map(row => ({
-  ...row,
-
-  // ⭐ Only store the actual home team PK
-  home_team_pk: actualHomePK,
-
-  // ⭐ League IDs still useful for filtering
- 
-
-  match_type: selectedFixture.match_type,
-  cup_round: selectedFixture.cup_round || null,
-  away_team_pk: actualAwayPK
-  
-}));
-
-
-
-  const { error } = await supabase
-    .from('all_scores')
-    .insert(payload);
-
-  result.textContent = error ? "Error: " + error.message : "Match uploaded!";
-  showStep(1);
-};
-
-
+    document.getElementById("result").textContent = error ? "Error: " + error.message : "Match uploaded!";
+    showStep(1);
+  };
 </script>
-
 </body>
 </html>
