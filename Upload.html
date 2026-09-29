@@ -2,64 +2,191 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Score Entry</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
+    :root {
+      --primary: #0a7;
+      --primary-dark: #086;
+      --bg-card: #ffffff;
+      --border-color: #d0d7de;
+      --text-main: #1f2937;
+      --radius: 8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f8fafc;
+      color: var(--text-main);
+      padding: 16px;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
     .step { display: none; }
     .step.active { display: block; }
-    h2 { margin-top: 0; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
+    h1 { font-size: 1.5rem; margin-top: 10px; }
+    h2 { font-size: 1.25rem; margin-top: 10px; border-bottom: 2px solid var(--primary); padding-bottom: 4px; }
+    
+    label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.95rem; }
+    
     input[type="text"], input[type="number"], select {
-      width: 100%; padding: 10px; margin-top: 5px;
-      font-size: 1.1rem; box-sizing: border-box;
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      background: #fff;
     }
+
     .player-block {
-      margin-bottom: 25px; padding: 15px;
-      border: 1px solid #ccc; border-radius: 8px;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
+
+    /* 4x2 on mobile, 8x1 on desktop */
     .balls {
-      display: grid; grid-template-columns: repeat(8, 1fr);
-      gap: 4px; margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+      margin-bottom: 12px;
     }
+
+    @media (min-width: 600px) {
+      .balls {
+        grid-template-columns: repeat(8, 1fr);
+      }
+    }
+
     .balls input {
-      width: 100%; padding: 6px; font-size: 16px; text-align: center;
+      width: 100%;
+      height: 48px;
+      padding: 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      box-sizing: border-box;
     }
+
+    .balls input:focus, input[type="number"]:focus, input[type="text"]:focus {
+      border-color: var(--primary);
+      outline: 2px solid #a3e635;
+    }
+
     .card-total-input {
       margin-top: 10px;
       display: none; /* Shown dynamically in Summary Mode */
     }
-    .totals { margin-top: 10px; font-size: 1rem; font-weight: bold; }
+
+    .totals {
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-color);
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--text-main);
+    }
+
     .summary-block {
-      padding: 12px; margin-bottom: 15px;
-      background: #f3f3f3; border-radius: 8px; font-size: 1rem;
+      padding: 14px;
+      margin-bottom: 15px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-size: 1rem;
     }
+
+    .summary-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--primary);
+    }
+
     button {
-      width: 100%; padding: 14px; margin-top: 20px;
-      font-size: 1.2rem; background: #0a7; color: white;
-      border: none; border-radius: 8px; cursor: pointer;
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
     }
-    .secondary { background: #555; }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    .secondary {
+      background: #4b5563;
+    }
+
+    .secondary:hover {
+      background: #374151;
+    }
+
     .hand-total-box {
-      background: #eef2f5; padding: 12px; margin: 15px 0;
-      border-radius: 8px; font-weight: bold; font-size: 1.0rem;
+      background: #eef2f5;
+      padding: 14px;
+      margin: 15px 0;
+      border-radius: var(--radius);
+      font-weight: bold;
+      font-size: 1.0rem;
+      border-left: 4px solid var(--primary);
     }
+
     #leadBanner {
-      position: sticky; top: 0; background: #003366;
-      color: white; padding: 12px; font-size: 1.1rem;
-      border-bottom: 3px solid #ffaa00; z-index: 999;
-      margin: -20px -20px 20px -20px;
+      position: sticky;
+      top: 0;
+      background: #003366;
+      color: white;
+      padding: 12px 16px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-bottom: 3px solid #ffaa00;
+      z-index: 999;
+      margin: -16px -16px 20px -16px;
     }
+
     .mode-toggle-container {
-      background: #f0f4f8; padding: 12px; border-radius: 8px;
-      margin: 15px 0; border: 1px solid #d0d7de;
+      background: #ffffff;
+      padding: 14px;
+      border-radius: var(--radius);
+      margin: 15px 0;
+      border: 1px solid var(--border-color);
     }
+
     .mode-toggle-container label {
-      display: inline-block; margin-right: 20px; font-weight: normal; cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: 20px;
+      margin-top: 6px;
+      font-weight: normal;
+      cursor: pointer;
     }
   </style>
 </head>
 
 <body>
+
+<div class="container">
 
 <div id="leadBanner">
   <span id="handLeadText">Hand level</span><br>
@@ -99,23 +226,23 @@
   <!-- FH1 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="FH1_Home_Player">
+    <input type="text" id="FH1_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="FH1_HomeBall1"><input id="FH1_HomeBall2"><input id="FH1_HomeBall3"><input id="FH1_HomeBall4">
-      <input id="FH1_HomeBall5"><input id="FH1_HomeBall6"><input id="FH1_HomeBall7"><input id="FH1_HomeBall8">
+      <input id="FH1_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="FH1_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="FH1_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="FH1_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="FH1_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="FH1_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="FH1_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="FH1_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="FH1_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="FH1_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="FH1_Away_Player">
+    <input type="text" id="FH1_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="FH1_AwayBall1"><input id="FH1_AwayBall2"><input id="FH1_AwayBall3"><input id="FH1_AwayBall4">
-      <input id="FH1_AwayBall5"><input id="FH1_AwayBall6"><input id="FH1_AwayBall7"><input id="FH1_AwayBall8">
+      <input id="FH1_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="FH1_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="FH1_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="FH1_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="FH1_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="FH1_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="FH1_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="FH1_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="FH1_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="FH1_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -127,23 +254,23 @@
   <!-- FH2 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="FH2_Home_Player">
+    <input type="text" id="FH2_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="FH2_HomeBall1"><input id="FH2_HomeBall2"><input id="FH2_HomeBall3"><input id="FH2_HomeBall4">
-      <input id="FH2_HomeBall5"><input id="FH2_HomeBall6"><input id="FH2_HomeBall7"><input id="FH2_HomeBall8">
+      <input id="FH2_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="FH2_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="FH2_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="FH2_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="FH2_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="FH2_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="FH2_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="FH2_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="FH2_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="FH2_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="FH2_Away_Player">
+    <input type="text" id="FH2_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="FH2_AwayBall1"><input id="FH2_AwayBall2"><input id="FH2_AwayBall3"><input id="FH2_AwayBall4">
-      <input id="FH2_AwayBall5"><input id="FH2_AwayBall6"><input id="FH2_AwayBall7"><input id="FH2_AwayBall8">
+      <input id="FH2_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="FH2_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="FH2_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="FH2_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="FH2_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="FH2_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="FH2_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="FH2_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="FH2_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="FH2_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -155,23 +282,23 @@
   <!-- FH3 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="FH3_Home_Player">
+    <input type="text" id="FH3_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="FH3_HomeBall1"><input id="FH3_HomeBall2"><input id="FH3_HomeBall3"><input id="FH3_HomeBall4">
-      <input id="FH3_HomeBall5"><input id="FH3_HomeBall6"><input id="FH3_HomeBall7"><input id="FH3_HomeBall8">
+      <input id="FH3_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="FH3_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="FH3_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="FH3_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="FH3_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="FH3_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="FH3_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="FH3_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="FH3_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="FH3_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="FH3_Away_Player">
+    <input type="text" id="FH3_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="FH3_AwayBall1"><input id="FH3_AwayBall2"><input id="FH3_AwayBall3"><input id="FH3_AwayBall4">
-      <input id="FH3_AwayBall5"><input id="FH3_AwayBall6"><input id="FH3_AwayBall7"><input id="FH3_AwayBall8">
+      <input id="FH3_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="FH3_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="FH3_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="FH3_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="FH3_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="FH3_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="FH3_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="FH3_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="FH3_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="FH3_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -195,23 +322,23 @@
   <!-- MH1 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="MH1_Home_Player">
+    <input type="text" id="MH1_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="MH1_HomeBall1"><input id="MH1_HomeBall2"><input id="MH1_HomeBall3"><input id="MH1_HomeBall4">
-      <input id="MH1_HomeBall5"><input id="MH1_HomeBall6"><input id="MH1_HomeBall7"><input id="MH1_HomeBall8">
+      <input id="MH1_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="MH1_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="MH1_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="MH1_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="MH1_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="MH1_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="MH1_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="MH1_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="MH1_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="MH1_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="MH1_Away_Player">
+    <input type="text" id="MH1_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="MH1_AwayBall1"><input id="MH1_AwayBall2"><input id="MH1_AwayBall3"><input id="MH1_AwayBall4">
-      <input id="MH1_AwayBall5"><input id="MH1_AwayBall6"><input id="MH1_AwayBall7"><input id="MH1_AwayBall8">
+      <input id="MH1_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="MH1_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="MH1_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="MH1_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="MH1_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="MH1_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="MH1_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="MH1_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="MH1_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="MH1_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -223,23 +350,23 @@
   <!-- MH2 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="MH2_Home_Player">
+    <input type="text" id="MH2_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="MH2_HomeBall1"><input id="MH2_HomeBall2"><input id="MH2_HomeBall3"><input id="MH2_HomeBall4">
-      <input id="MH2_HomeBall5"><input id="MH2_HomeBall6"><input id="MH2_HomeBall7"><input id="MH2_HomeBall8">
+      <input id="MH2_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="MH2_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="MH2_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="MH2_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="MH2_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="MH2_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="MH2_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="MH2_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="MH2_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="MH2_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="MH2_Away_Player">
+    <input type="text" id="MH2_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="MH2_AwayBall1"><input id="MH2_AwayBall2"><input id="MH2_AwayBall3"><input id="MH2_AwayBall4">
-      <input id="MH2_AwayBall5"><input id="MH2_AwayBall6"><input id="MH2_AwayBall7"><input id="MH2_AwayBall8">
+      <input id="MH2_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="MH2_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="MH2_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="MH2_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="MH2_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="MH2_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="MH2_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="MH2_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="MH2_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="MH2_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -251,23 +378,23 @@
   <!-- MH3 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="MH3_Home_Player">
+    <input type="text" id="MH3_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="MH3_HomeBall1"><input id="MH3_HomeBall2"><input id="MH3_HomeBall3"><input id="MH3_HomeBall4">
-      <input id="MH3_HomeBall5"><input id="MH3_HomeBall6"><input id="MH3_HomeBall7"><input id="MH3_HomeBall8">
+      <input id="MH3_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="MH3_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="MH3_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="MH3_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="MH3_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="MH3_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="MH3_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="MH3_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="MH3_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="MH3_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="MH3_Away_Player">
+    <input type="text" id="MH3_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="MH3_AwayBall1"><input id="MH3_AwayBall2"><input id="MH3_AwayBall3"><input id="MH3_AwayBall4">
-      <input id="MH3_AwayBall5"><input id="MH3_AwayBall6"><input id="MH3_AwayBall7"><input id="MH3_AwayBall8">
+      <input id="MH3_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="MH3_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="MH3_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="MH3_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="MH3_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="MH3_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="MH3_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="MH3_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="MH3_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="MH3_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -292,23 +419,23 @@
   <!-- BH1 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="BH1_Home_Player">
+    <input type="text" id="BH1_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="BH1_HomeBall1"><input id="BH1_HomeBall2"><input id="BH1_HomeBall3"><input id="BH1_HomeBall4">
-      <input id="BH1_HomeBall5"><input id="BH1_HomeBall6"><input id="BH1_HomeBall7"><input id="BH1_HomeBall8">
+      <input id="BH1_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="BH1_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="BH1_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="BH1_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="BH1_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="BH1_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="BH1_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="BH1_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="BH1_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="BH1_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="BH1_Away_Player">
+    <input type="text" id="BH1_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="BH1_AwayBall1"><input id="BH1_AwayBall2"><input id="BH1_AwayBall3"><input id="BH1_AwayBall4">
-      <input id="BH1_AwayBall5"><input id="BH1_AwayBall6"><input id="BH1_AwayBall7"><input id="BH1_AwayBall8">
+      <input id="BH1_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="BH1_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="BH1_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="BH1_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="BH1_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="BH1_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="BH1_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="BH1_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="BH1_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="BH1_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -320,23 +447,23 @@
   <!-- BH2 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="BH2_Home_Player">
+    <input type="text" id="BH2_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="BH2_HomeBall1"><input id="BH2_HomeBall2"><input id="BH2_HomeBall3"><input id="BH2_HomeBall4">
-      <input id="BH2_HomeBall5"><input id="BH2_HomeBall6"><input id="BH2_HomeBall7"><input id="BH2_HomeBall8">
+      <input id="BH2_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="BH2_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="BH2_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="BH2_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="BH2_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="BH2_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="BH2_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="BH2_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="BH2_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="BH2_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="BH2_Away_Player">
+    <input type="text" id="BH2_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="BH2_AwayBall1"><input id="BH2_AwayBall2"><input id="BH2_AwayBall3"><input id="BH2_AwayBall4">
-      <input id="BH2_AwayBall5"><input id="BH2_AwayBall6"><input id="BH2_AwayBall7"><input id="BH2_AwayBall8">
+      <input id="BH2_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="BH2_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="BH2_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="BH2_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="BH2_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="BH2_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="BH2_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="BH2_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="BH2_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="BH2_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -348,23 +475,23 @@
   <!-- BH3 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="BH3_Home_Player">
+    <input type="text" id="BH3_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="BH3_HomeBall1"><input id="BH3_HomeBall2"><input id="BH3_HomeBall3"><input id="BH3_HomeBall4">
-      <input id="BH3_HomeBall5"><input id="BH3_HomeBall6"><input id="BH3_HomeBall7"><input id="BH3_HomeBall8">
+      <input id="BH3_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="BH3_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="BH3_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="BH3_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="BH3_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="BH3_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="BH3_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="BH3_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="BH3_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="BH3_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="BH3_Away_Player">
+    <input type="text" id="BH3_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="BH3_AwayBall1"><input id="BH3_AwayBall2"><input id="BH3_AwayBall3"><input id="BH3_AwayBall4">
-      <input id="BH3_AwayBall5"><input id="BH3_AwayBall6"><input id="BH3_AwayBall7"><input id="BH3_AwayBall8">
+      <input id="BH3_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="BH3_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="BH3_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="BH3_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="BH3_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="BH3_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="BH3_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="BH3_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="BH3_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="BH3_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -376,23 +503,23 @@
   <!-- BH4 -->
   <div class="player-block">
     <label>Home Player</label>
-    <input type="text" id="BH4_Home_Player">
+    <input type="text" id="BH4_Home_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="BH4_HomeBall1"><input id="BH4_HomeBall2"><input id="BH4_HomeBall3"><input id="BH4_HomeBall4">
-      <input id="BH4_HomeBall5"><input id="BH4_HomeBall6"><input id="BH4_HomeBall7"><input id="BH4_HomeBall8">
+      <input id="BH4_HomeBall1" inputmode="numeric" pattern="[0-9]*"><input id="BH4_HomeBall2" inputmode="numeric" pattern="[0-9]*"><input id="BH4_HomeBall3" inputmode="numeric" pattern="[0-9]*"><input id="BH4_HomeBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="BH4_HomeBall5" inputmode="numeric" pattern="[0-9]*"><input id="BH4_HomeBall6" inputmode="numeric" pattern="[0-9]*"><input id="BH4_HomeBall7" inputmode="numeric" pattern="[0-9]*"><input id="BH4_HomeBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="BH4_HomeCardTotal" placeholder="Home Total Score">
+      <input type="number" id="BH4_HomeCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Home Total Score">
     </div>
 
     <label>Away Player</label>
-    <input type="text" id="BH4_Away_Player">
+    <input type="text" id="BH4_Away_Player" placeholder="Player Name">
     <div class="balls">
-      <input id="BH4_AwayBall1"><input id="BH4_AwayBall2"><input id="BH4_AwayBall3"><input id="BH4_AwayBall4">
-      <input id="BH4_AwayBall5"><input id="BH4_AwayBall6"><input id="BH4_AwayBall7"><input id="BH4_AwayBall8">
+      <input id="BH4_AwayBall1" inputmode="numeric" pattern="[0-9]*"><input id="BH4_AwayBall2" inputmode="numeric" pattern="[0-9]*"><input id="BH4_AwayBall3" inputmode="numeric" pattern="[0-9]*"><input id="BH4_AwayBall4" inputmode="numeric" pattern="[0-9]*">
+      <input id="BH4_AwayBall5" inputmode="numeric" pattern="[0-9]*"><input id="BH4_AwayBall6" inputmode="numeric" pattern="[0-9]*"><input id="BH4_AwayBall7" inputmode="numeric" pattern="[0-9]*"><input id="BH4_AwayBall8" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="card-total-input">
-      <input type="number" id="BH4_AwayCardTotal" placeholder="Away Total Score">
+      <input type="number" id="BH4_AwayCardTotal" inputmode="numeric" pattern="[0-9]*" placeholder="Away Total Score">
     </div>
 
     <div class="totals">
@@ -424,6 +551,8 @@
 </div>
 
 <p id="result"></p>
+
+</div>
 
 <script type="module">
   import { supabase } from './supabase.js';
@@ -720,7 +849,7 @@
         html += `
           <div>${homePlayer}: <strong>${homeTotal}</strong></div>
           <div>${awayPlayer}: <strong>${awayTotal}</strong></div>
-          <hr>
+          <hr style="border:0; border-top:1px dashed #d0d7de; margin:8px 0;">
         `;
       });
 
