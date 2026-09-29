@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Wye Emms Skittles League</title>
+  <title>Tewkesbury Skittles League - Wye Emms Page</title>
 
   <link rel="stylesheet" href="style.css" />
 
@@ -28,11 +28,11 @@
       margin: 8px 0 0;
     }
 
-    .highlight-sharks {
-      background-color: #0044aa;
-      color: white;
-      font-weight: bold;
-    }
+    .highlight-wye-emms {
+  background-color: #0044aa;
+  color: white;
+  font-weight: bold;
+}
 
     .promotion-row {
       background-color: #c8f7c5;
@@ -94,7 +94,7 @@
 </section>
 
 <section id="division3" class="banner">
-  <h2>Division 3 League Table</h2>
+  <h2>Premier League Table</h2>
   <table>
     <thead>
       <tr>
@@ -173,7 +173,7 @@
     `).join("");
   }
 
-  async function loadLeagueTable() {
+  async function loadPremierTable() {
     const tbody = document.getElementById("leagueTableBody");
 
     const { data, error } = await supabase.rpc("get_sharks_league_table", { season });
@@ -196,7 +196,7 @@
     `).join("");
   }
 
-  async function loadDivision3() {
+  async function loadPremier() {
     const tbody = document.getElementById("division3Body");
 
     try {
@@ -263,30 +263,30 @@
 
   // 5. Render
   tbody.innerHTML = division3.map(r => `
-    <tr class="${r.highlight ? 'Wye Emms' : ''} ${r.promotion ? 'promotion-row' : ''}">
-      <td>${r.position}</td>
-      <td>${r.team}</td>
-      <td>${r.played}</td>
-      <td>${r.won}</td>
-      <td>${r.drawn}</td>
-      <td>${r.Set1}</td>
-      <td>${r.Set2}</td>
-      <td>${r.Set3}</td>
-      <td>${r.SetD}</td>
-      <td>${r.points}</td>
-    </tr>
-  `).join("");
+  <tr class="${r.highlight ? 'highlight-wye-emms' : ''} ${r.promotion ? 'promotion-row' : ''}">
+    <td>${r.position}</td>
+    <td>${r.team}</td>
+    <td>${r.played}</td>
+    <td>${r.won}</td>
+    <td>${r.drawn}</td>
+    <td>${r.Set1}</td>
+    <td>${r.Set2}</td>
+    <td>${r.Set3}</td>
+    <td>${r.SetD}</td>
+    <td>${r.points}</td>
+  </tr>
+`).join("");
 
 } catch (err) {
   console.error(err);
-  tbody.innerHTML = `<tr><td colspan="6">Error loading Division 3</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6">Error loading Premier</td></tr>`;
 }
 }
 
   loadNextFixture();
   loadTopScorers();
-  loadLeagueTable();
-  loadDivision3();
+  loadPremierTable();
+  loadPremier();
 </script>
 
 </body>
