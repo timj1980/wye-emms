@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>League Fixtures & Score Status</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { font-size: 24px; color: #333; }
+
+    .filter-bar {
+      margin: 15px 0;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    select, input {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+
+    /* Color Status Classes */
+    .status-has-scores {
+      background-color: #d4edda !important; /* Soft Green */
+      color: #155724;
+    }
+
+    .status-result-summary {
+      background-color: #ffe8cc !important; /* Soft Orange */
+      color: #d97706;
+      font-weight: bold;
+    }
+
+    .status-missing-scores {
+      background-color: #f8d7da !important; /* Soft Red */
+      color: #721c24;
+      font-weight: bold;
+    }
+
+    .status-upcoming {
+      background-color: #ffffff !important; /* White */
+      color: #333333;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .badge-green { background: #28a745; color: #fff; }
+    .badge-orange { background: #f59e0b; color: #fff; }
+    .badge-red { background: #dc3545; color: #fff; }
+    .badge-white { background: #e0e0e0; color: #333; }
+
+    /* Interactive row styles */
+    tr.status-has-scores, tr.status-result-summary, tr.status-missing-scores {
+      cursor: pointer;
+      transition: background-color 0.15s ease, filter 0.15s ease;
+    }
+
+    tr.status-has-scores:hover, tr.status-result-summary:hover {
+      filter: brightness(0.95);
+    }
+
+    tr.status-missing-scores:hover {
+      filter: brightness(0.93);
+    }
+
+    .action-link {
+      font-weight: bold;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="nav-placeholder"></div>
+
+<script>
+  fetch("Nav.html")
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById("nav-placeholder").innerHTML = html;
+    });
+</script>
+
+<h1>All Teams – Fixtures & Score Status</h1>
+
+<div style="margin-bottom: 10px;">
+  <span class="badge badge-green">Green = Full Scorecard</span>
+  <span class="badge badge-orange">Orange = Results Summary</span>
+  <span class="badge badge-red">Red = Past Match (Missing Scores)</span>
+  <span class="badge badge-white">White = Fixture To Play</span>
+</div>
+
+<div class="filter-bar">
+  <label><strong>Filter by Team:</strong>
+    <select id="teamFilter">
+      <option value="ALL">-- All Teams --</option>
+    </select>
+  </label>
+
+  <label><strong>Filter Status:</strong>
+    <select id="statusFilter">
+      <option value="ALL">-- All Statuses --</option>
+      <option value="status-missing-scores">Missing Scores Only (Red)</option>
+      <option value="status-result-summary">Results Summary Only (Orange)</option>
+      <option value="status-has-scores">Full Scorecard Only (Green)</option>
+      <option value="status-upcoming">Upcoming Only (White)</option>
+    </select>
+  </label>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Home Team</th>
+      <th>Away Team</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="allFixturesBody">
+    <tr><td colspan="4">Loading league fixtures...</td></tr>
+  </tbody>
+</table>
+
+<script type="module">
+  import { supabase } from "./supabase.js";
+
+  async function fetchTeams() {
+    const { data, error } = await supabase
+      .from("Teams")
+      .select('"Team Name"')
+      .order('"Team Name"', { ascending: true });
+
+    if (error) {
+      console.error("Supabase Error:", error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      console.warn("No rows returned. Check RLS policies on the 'Teams' table.");
+      return [];
+    }
+
+    return data.map(t => t["Team Name"]);
+  }
+
+  function normaliseDate(str) {
+    if (!str) return "";
+    const match = str.match(/\d{1,2}-\d{1,2}-\d{4}/);
+    if (!match) return str;
+    let [dd, mm, yyyy] = match[0].split("-");
+    if (dd.length === 1) dd = "0" + dd;
+    if (mm.length === 1) mm = "0" + mm;
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  let allRowsData = [];
+
+  async function loadAllLeagueFixtures() {
+    const tbody = document.getElementById("allFixturesBody");
+    const teamFilter = document.getElementById("teamFilter");
+
+    const teamsList = await fetchTeams();
+
+    if (teamsList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4">Failed to load teams list.</td></tr>`;
+      return;
+    }
+
+    teamsList.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      teamFilter.appendChild(opt);
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const teamPromises = teamsList.map(async (teamName) => {
+      const { data: fixtures, error } = await supabase.rpc("tmsl_get_allfixtures", {
+        team: teamName
+      });
+
+      if (error || !fixtures) return [];
+
+      return Promise.all(
+        fixtures.map(async (fx) => {
+          const isoDate = normaliseDate(fx.game_date);
+          const matchDate = new Date(isoDate);
+
+          let rowClass = "status-upcoming";
+          let statusText = "Upcoming";
+
+          if (matchDate <= today) {
+            const { data: scores } = await supabase.rpc("tmsl_get_match_scores_with_summary", {
+              team_namein: teamName,
+              game_date: isoDate
+            });
+
+            if (scores && scores.length > 0) {
+              const sampleRow = scores[0];
+
+              // Check 1: Explicit Result Summary check (balls are null, but total is populated)
+              const isSummary = sampleRow.homeball1 === null ;
+
+              if (isSummary) {
+                rowClass = "status-result-summary";
+                statusText = "Results Summary";
+              } else {
+                rowClass = "status-has-scores";
+                statusText = "Scores Available";
+              }
+            } else {
+              rowClass = "status-missing-scores";
+              statusText = "Missing Scores";
+            }
+          }
+
+          const isHome = fx.home_away === 'H' || fx.home_away === 'Home';
+
+          return {
+            team: teamName,
+            gameDate: fx.game_date,
+            isoDate: isoDate,
+            homeTeam: isHome ? teamName : fx.opposition,
+            awayTeam: isHome ? fx.opposition : teamName,
+            statusText: statusText,
+            rowClass: rowClass
+          };
+        })
+      );
+    });
+
+    const results = await Promise.all(teamPromises);
+    
+    const seenMatches = new Set();
+    allRowsData = results.flat().filter(item => {
+      const matchKey = [item.gameDate, item.homeTeam, item.awayTeam].sort().join("|");
+      if (seenMatches.has(matchKey)) return false;
+      seenMatches.add(matchKey);
+      return true;
+    });
+
+    allRowsData.sort((a, b) => new Date(a.isoDate) - new Date(b.isoDate));
+
+    renderTable();
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById("allFixturesBody");
+    const selectedTeam = document.getElementById("teamFilter").value;
+    const selectedStatus = document.getElementById("statusFilter").value;
+
+    const filtered = allRowsData.filter(r => {
+      const matchTeam = selectedTeam === "ALL" || r.homeTeam === selectedTeam || r.awayTeam === selectedTeam;
+      const matchStatus = selectedStatus === "ALL" || r.rowClass === selectedStatus;
+      return matchTeam && matchStatus;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4">No matching fixtures found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(r => {
+      let actionHtml = r.statusText;
+      let targetUrl = "";
+
+      if (r.rowClass === "status-has-scores") {
+        targetUrl = `MatchViewer.html?team=${encodeURIComponent(r.team)}&date=${encodeURIComponent(r.isoDate)}`;
+        actionHtml = `<span class="action-link">View Scoresheet ↗</span>`;
+      } else if (r.rowClass === "status-result-summary") {
+        targetUrl = `MatchViewer.html?team=${encodeURIComponent(r.team)}&date=${encodeURIComponent(r.isoDate)}`;
+        actionHtml = `<span class="action-link">Results Summary ↗</span>`;
+      } else if (r.rowClass === "status-missing-scores") {
+        targetUrl = `upload.html?team=${encodeURIComponent(r.team)}&date=${encodeURIComponent(r.isoDate)}`;
+        actionHtml = `<span class="action-link">Upload Scores ↗</span>`;
+      }
+
+      return `
+        <tr class="${r.rowClass}" ${targetUrl ? `data-url="${targetUrl}"` : ""}>
+          <td>${r.gameDate}</td>
+          <td><strong>${r.homeTeam}</strong></td>
+          <td><strong>${r.awayTeam}</strong></td>
+          <td>${actionHtml}</td>
+        </tr>
+      `;
+    }).join("");
+
+    tbody.querySelectorAll("tr[data-url]").forEach(row => {
+      row.addEventListener("click", () => {
+        window.location.href = row.getAttribute("data-url");
+      });
+    });
+  }
+
+  document.getElementById("teamFilter").addEventListener("change", renderTable);
+  document.getElementById("statusFilter").addEventListener("change", renderTable);
+
+  loadAllLeagueFixtures();
+</script>
+
+</body>
+</html>
