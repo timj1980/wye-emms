@@ -4,50 +4,162 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Match Scorecard Upload</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; background: #f4f6f8; color: #24292f; }
-    .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; }
-    .step { display: none; }
-    .step.active { display: block; }
-    .banner { background: #1f2937; color: white; padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; }
-    .banner span { font-weight: bold; margin: 0 10px; }
-    .grid-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #e1e4e8; padding-bottom: 8px; }
-    .balls { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; flex: 1; }
-    input[type="number"], input[type="text"], select { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    .card-total-input { display: none; width: 80px; }
-    .totals-column { width: 50px; text-align: center; font-weight: bold; }
-    .actions { display: flex; justify-content: space-between; margin-top: 20px; }
-    button { padding: 10px 20px; border: none; background: #2da44e; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    button.secondary { background: #6e7781; }
-    .summary-block { background: #f6f8fa; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+<style>
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    margin: 10px; 
+    background: #f4f6f8; 
+    color: #24292f; 
+  }
+  .card { 
+    background: #fff; 
+    padding: 16px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+    max-width: 800px; 
+    margin: 0 auto; 
+  }
+  .step { display: none; }
+  .step.active { display: block; }
+  .banner { 
+    background: #1f2937; 
+    color: white; 
+    padding: 12px; 
+    border-radius: 6px; 
+    margin-bottom: 20px; 
+    text-align: center; 
+  }
+  .banner span { font-weight: bold; margin: 0 10px; }
+  .grid-row { 
+    display: flex; 
+    gap: 10px; 
+    align-items: center; 
+    margin-bottom: 16px; 
+    border-bottom: 1px solid #e1e4e8; 
+    padding-bottom: 12px; 
+  }
+  
+  /* Increased default input sizes for easy touch targets */
+  input[type="number"], input[type="text"], select { 
+    width: 100%; 
+    padding: 10px 8px; 
+    font-size: 16px; /* Prevents auto-zoom on iOS safari */
+    border: 1px solid #ccc; 
+    border-radius: 6px; 
+    box-sizing: border-box; 
+    text-align: center;
+  }
+  
+  input[type="text"] {
+    text-align: left;
+  }
 
-    /* Pop-up Modal Styling */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      justify-content: center;
-      align-items: center;
+  .balls { 
+    display: grid; 
+    grid-template-columns: repeat(8, 1fr); 
+    gap: 4px; 
+    flex: 1; 
+  }
+
+  /* Make individual ball inputs taller & remove spin buttons for cleaner entry */
+  .balls input[type="number"] {
+    padding: 8px 0;
+    font-weight: bold;
+    -moz-appearance: textfield;
+  }
+  .balls input[type="number"]::-webkit-outer-spin-button,
+  .balls input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .card-total-input { 
+    display: none; 
+    width: 100%; 
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px;
+  }
+
+  .totals-column { 
+    min-width: 36px; 
+    text-align: center; 
+    font-weight: bold; 
+    font-size: 18px; 
+  }
+
+  .actions { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 20px; 
+    gap: 10px;
+  }
+
+  button { 
+    padding: 12px 18px; 
+    font-size: 16px;
+    border: none; 
+    background: #2da44e; 
+    color: white; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    flex: 1;
+  }
+
+  button.secondary { background: #6e7781; }
+  .summary-block { background: #f6f8fa; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+
+  /* Dynamic adjustments specifically for small screens / Portrait mode */
+  @media (max-width: 600px) {
+    .card { padding: 10px; }
+    .grid-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      background: #fafafa;
+      padding: 10px;
+      border-radius: 6px;
     }
-    .modal.active {
-      display: flex;
+    .totals-column {
+      font-size: 20px;
+      padding: 4px 0;
+      color: #0969da;
     }
-    .modal-content {
-      background-color: #fff;
-      padding: 24px;
-      border-radius: 8px;
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    .balls {
+      gap: 3px;
     }
-    .modal-content h3 { margin-top: 0; }
-  </style>
+    .balls input[type="number"] {
+      height: 44px; /* Optimal minimum touch target height */
+      font-size: 18px;
+    }
+  }
+
+  /* Pop-up Modal Styling */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background-color: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .modal-content h3 { margin-top: 0; }
+</style>
 </head>
 <body>
 
